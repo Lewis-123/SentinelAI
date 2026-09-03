@@ -33,6 +33,11 @@ from backend.services.history import (
 )
 
 
+from backend.services.location import (
+    get_locations
+)
+
+
 from backend.database.connection import (
     get_db
 )
@@ -44,9 +49,10 @@ router = APIRouter()
 
 
 
+
 @router.get("/weather/{city}")
 
-def weather(city:str):
+def weather(city: str):
 
 
     try:
@@ -71,24 +77,43 @@ def weather(city:str):
 
 
 
+
+
 @router.get("/analyze/{city}")
 
 def analyze_location(
 
-    city:str,
+    city: str,
 
-    db:Session = Depends(get_db)
+    db: Session = Depends(get_db)
 
 ):
 
 
-    return predict_location_risk(
+    try:
 
-        city,
 
-        db
+        return predict_location_risk(
 
-    )
+            city,
+
+            db
+
+        )
+
+
+    except Exception as e:
+
+
+        raise HTTPException(
+
+            status_code=400,
+
+            detail=str(e)
+
+        )
+
+
 
 
 
@@ -98,9 +123,9 @@ def analyze_location(
 
 def predict(
 
-    data:dict,
+    data: dict,
 
-    db:Session = Depends(get_db)
+    db: Session = Depends(get_db)
 
 ):
 
@@ -117,11 +142,13 @@ def predict(
 
 
 
+
+
 @router.get("/alerts")
 
 def read_alerts(
 
-    db:Session = Depends(get_db)
+    db: Session = Depends(get_db)
 
 ):
 
@@ -133,23 +160,35 @@ def read_alerts(
 
     return {
 
+
         "alerts":[
 
 
             {
 
 
-                "id":alert.id,
+                "id":
+                alert.id,
 
-                "location":alert.location,
 
-                "risk_level":alert.risk_level,
+                "location":
+                alert.location,
 
-                "severity":alert.severity,
 
-                "message":alert.message,
+                "risk_level":
+                alert.risk_level,
 
-                "timestamp":alert.timestamp
+
+                "severity":
+                alert.severity,
+
+
+                "message":
+                alert.message,
+
+
+                "timestamp":
+                alert.timestamp
 
             }
 
@@ -165,11 +204,14 @@ def read_alerts(
 
 
 
+
+
+
 @router.get("/history")
 
 def history(
 
-    db:Session = Depends(get_db)
+    db: Session = Depends(get_db)
 
 ):
 
@@ -188,18 +230,91 @@ def history(
             {
 
 
-                "id":item.id,
+                "id":
+                item.id,
 
-                "risk_level":item.risk_level,
 
-                "confidence":item.confidence,
+                "risk_level":
+                item.risk_level,
 
-                "timestamp":item.timestamp
+
+                "confidence":
+                item.confidence,
+
+
+                "timestamp":
+                item.timestamp
+
 
             }
 
 
             for item in records
+
+
+        ]
+
+    }
+
+
+
+
+
+
+
+
+@router.get("/locations")
+
+def locations(
+
+    db: Session = Depends(get_db)
+
+):
+
+
+    data = get_locations(
+        db
+    )
+
+
+
+    return {
+
+
+        "locations":[
+
+
+            {
+
+
+                "name":
+                item.name,
+
+
+                "latitude":
+                item.latitude,
+
+
+                "longitude":
+                item.longitude,
+
+
+                "risk":
+                item.risk_level,
+
+
+                "confidence":
+                item.confidence,
+
+
+                "timestamp":
+                item.timestamp
+
+
+            }
+
+
+            for item in data
 
 
         ]
