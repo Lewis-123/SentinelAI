@@ -1,8 +1,3 @@
-import { useEffect, useState } from "react";
-
-import axios from "axios";
-
-
 import {
     MapContainer,
     TileLayer,
@@ -11,7 +6,10 @@ import {
 } from "react-leaflet";
 
 
-import "leaflet/dist/leaflet.css";
+import {
+    useEffect,
+    useState
+} from "react";
 
 
 import L from "leaflet";
@@ -20,84 +18,22 @@ import L from "leaflet";
 
 
 
-interface LocationRisk {
+interface RiskLocation {
 
 
-    name:string;
-
-    latitude:number;
-
-    longitude:number;
-
-    risk:string;
-
-    confidence:number;
+    location: string;
 
 
-}
+    latitude: number;
 
 
+    longitude: number;
 
 
-
-function createRiskIcon(risk:string){
-
+    risk_level: string;
 
 
-    let color = "green";
-
-
-
-    if(risk === "HIGH"){
-
-        color = "red";
-
-    }
-
-
-    else if(risk === "MEDIUM"){
-
-        color = "orange";
-
-    }
-
-
-
-
-    return L.divIcon({
-
-
-        className:"custom-marker",
-
-
-        html:
-
-
-        `
-
-        <div style="
-
-            background:${color};
-
-            width:25px;
-
-            height:25px;
-
-            border-radius:50%;
-
-            border:3px solid white;
-
-            box-shadow:0 0 8px rgba(0,0,0,0.5);
-
-        ">
-
-        </div>
-
-        `
-
-
-    });
-
+    risk_score: number;
 
 }
 
@@ -105,59 +41,17 @@ function createRiskIcon(risk:string){
 
 
 
-function RiskMap(){
+export default function RiskMap(){
 
 
 
     const [locations,setLocations] =
-
-        useState<LocationRisk[]>([]);
-
+        useState<RiskLocation[]>([]);
 
 
 
-
-    const fetchLocations = async()=>{
-
-
-        try{
-
-
-            const response = await axios.get(
-
-                "http://127.0.0.1:8000/locations"
-
-            );
-
-
-
-            setLocations(
-
-                response.data.locations
-
-            );
-
-
-
-        }
-
-
-        catch(error){
-
-
-            console.error(
-
-                "Failed loading locations",
-
-                error
-
-            );
-
-
-        }
-
-
-    };
+    const [loading,setLoading] =
+        useState(true);
 
 
 
@@ -167,7 +61,55 @@ function RiskMap(){
     useEffect(()=>{
 
 
-        fetchLocations();
+        async function fetchRiskMap(){
+
+
+            try{
+
+
+                const response =
+                    await fetch(
+                        "http://127.0.0.1:8000/risk-map"
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+
+                setLocations(
+                    data.locations
+                );
+
+
+            }
+
+            catch(error){
+
+
+                console.error(
+                    "Risk map error:",
+                    error
+                );
+
+
+            }
+
+            finally{
+
+
+                setLoading(false);
+
+            }
+
+
+        }
+
+
+
+        fetchRiskMap();
+
 
 
     },[]);
@@ -177,17 +119,91 @@ function RiskMap(){
 
 
 
+
+    function getColor(
+        risk:string
+    ){
+
+
+        if(risk==="HIGH")
+            return "red";
+
+
+        if(risk==="MEDIUM")
+            return "orange";
+
+
+        return "green";
+
+    }
+
+
+
+
+
+
+
+    function createIcon(
+        risk:string
+    ){
+
+
+        return L.divIcon({
+
+            className:"risk-marker",
+
+            html:
+
+            `
+            <div style="
+            background:${getColor(risk)};
+            width:25px;
+            height:25px;
+            border-radius:50%;
+            border:3px solid white;
+            ">
+            </div>
+            `
+
+        });
+
+
+    }
+
+
+
+
+
+
+
+    if(loading){
+
+
+        return (
+
+            <p>
+                Loading risk map...
+            </p>
+
+        );
+
+    }
+
+
+
+
+
+
+
     return (
 
 
-
-        <div className="bg-white rounded-xl shadow p-6 mt-10">
-
+        <div className="w-full h-[600px]">
 
 
-            <h2 className="text-2xl font-bold mb-5">
+            <h2 className="text-xl font-bold mb-4">
 
-                Geographic Risk Intelligence Map
+                SentinelAI Risk Map
 
             </h2>
 
@@ -199,11 +215,8 @@ function RiskMap(){
 
 
                 center={[
-
-                    -1.286389,
-
-                    36.817223
-
+                    -1.2921,
+                    36.8219
                 ]}
 
 
@@ -211,13 +224,9 @@ function RiskMap(){
 
 
                 style={{
-
-                    height:"500px",
-
+                    height:"550px",
                     width:"100%"
-
                 }}
-
 
 
             >
@@ -226,12 +235,9 @@ function RiskMap(){
 
                 <TileLayer
 
-
-                    attribution="&copy; OpenStreetMap contributors"
-
-
                     url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 
+                    attribution="© OpenStreetMap"
 
                 />
 
@@ -242,115 +248,90 @@ function RiskMap(){
 
                 {
 
-                    locations.map(
+                locations.map(
+                    (item)=>(
 
-                        (location,index)=>(
 
+                    <Marker
 
+                        key={
+                            item.location
+                        }
 
-                            <Marker
 
+                        position={[
 
-                                key={index}
+                            item.latitude,
 
+                            item.longitude
 
-                                position={[
+                        ]}
 
 
-                                    location.latitude,
+                        icon={
 
+                            createIcon(
+                                item.risk_level
+                            )
 
-                                    location.longitude
+                        }
 
+                    >
 
-                                ]}
 
+                        <Popup>
 
 
-                                icon={
+                            <div>
 
-                                    createRiskIcon(
 
-                                        location.risk
+                                <h3 className="font-bold">
 
-                                    )
+                                    {item.location}
 
-                                }
+                                </h3>
 
 
-                            >
 
+                                <p>
 
+                                Risk:
 
-                                <Popup>
+                                {" "}
 
+                                {item.risk_level}
 
+                                </p>
 
-                                    <div>
 
 
+                                <p>
 
-                                        <h3 className="font-bold text-lg">
+                                Score:
 
-                                            {location.name}
+                                {" "}
 
-                                        </h3>
+                                {item.risk_score}/100
 
+                                </p>
 
 
 
-                                        <p>
+                            </div>
 
-                                            Risk Level:
 
-                                            {" "}
+                        </Popup>
 
-                                            <strong>
 
-                                            {location.risk}
 
-                                            </strong>
+                    </Marker>
 
-                                        </p>
-
-
-
-
-
-                                        <p>
-
-                                            Confidence:
-
-                                            {" "}
-
-                                            {location.confidence}%
-
-                                        </p>
-
-
-
-
-                                    </div>
-
-
-
-
-                                </Popup>
-
-
-
-
-                            </Marker>
-
-
-
-                        )
 
                     )
 
+                )
+
                 }
-
-
 
 
 
@@ -358,51 +339,8 @@ function RiskMap(){
 
 
 
-
-
-
-            {/* Map Legend */}
-
-
-            <div className="mt-5 flex gap-6">
-
-
-                <div>
-
-                    🔴 High Risk
-
-                </div>
-
-
-                <div>
-
-                    🟡 Medium Risk
-
-                </div>
-
-
-                <div>
-
-                    🟢 Low Risk
-
-                </div>
-
-
-
-            </div>
-
-
-
-
         </div>
 
-
-
-    )
+    );
 
 }
-
-
-
-
-export default RiskMap;
