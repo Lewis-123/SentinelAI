@@ -1,23 +1,16 @@
+import { useEffect, useState } from "react";
+
+
 import LocationAnalyzer from "./LocationAnalyzer";
 
 import RiskMap from "./RiskMap";
 
-import { useEffect, useState } from "react";
 
+import AlertPanel from "./dashboard/AlertPanel";
 
+import RiskSummary from "./dashboard/RiskSummary";
 
-
-
-interface RiskSummary {
-
-
-    location: string;
-
-    risk_level: string;
-
-    risk_score: number;
-
-}
+import RiskTrend from "./dashboard/RiskTrend";
 
 
 
@@ -28,12 +21,9 @@ export default function Dashboard() {
 
     const [status, setStatus] = useState(
 
-        "Connecting..."
+        "Checking system..."
 
     );
-
-
-    const [summary, setSummary] = useState<RiskSummary[]>([]);
 
 
 
@@ -42,7 +32,7 @@ export default function Dashboard() {
     useEffect(() => {
 
 
-        async function checkSystem() {
+        async function checkSystem(){
 
 
             try {
@@ -55,7 +45,8 @@ export default function Dashboard() {
                 );
 
 
-                if (response.ok) {
+
+                if(response.ok){
 
 
                     setStatus(
@@ -66,6 +57,19 @@ export default function Dashboard() {
 
 
                 }
+
+                else {
+
+
+                    setStatus(
+
+                        "System Error"
+
+                    );
+
+
+                }
+
 
 
             } catch {
@@ -79,6 +83,7 @@ export default function Dashboard() {
 
 
             }
+
 
         }
 
@@ -97,7 +102,6 @@ export default function Dashboard() {
 
     return (
 
-
         <div className="min-h-screen bg-gray-100 p-6">
 
 
@@ -105,27 +109,33 @@ export default function Dashboard() {
 
 
 
+
+
                 {/* Header */}
 
-                <div className="bg-white rounded-xl shadow p-6">
+                <section className="bg-white rounded-xl shadow p-6">
 
 
                     <h1 className="text-3xl font-bold">
 
-                        SentinelAI Dashboard
+                        SentinelAI Operations Dashboard
 
                     </h1>
 
 
-                    <p className="mt-2 text-gray-600">
 
-                        AI-powered environmental risk early warning system
+                    <p className="text-gray-600 mt-2">
+
+                        AI-powered environmental risk monitoring and
+
+                        early-warning platform
 
                     </p>
 
 
 
-                    <div className="mt-4">
+
+                    <div className="mt-4 flex items-center gap-2">
 
 
                         <span className="font-semibold">
@@ -135,9 +145,10 @@ export default function Dashboard() {
                         </span>
 
 
-                        <span className="ml-2 text-green-600">
 
-                            {status}
+                        <span className="text-green-600 font-bold">
+
+                            🟢 {status}
 
                         </span>
 
@@ -146,7 +157,33 @@ export default function Dashboard() {
 
 
 
-                </div>
+                </section>
+
+
+
+
+
+
+
+
+
+                {/* Intelligence Widgets */}
+
+                <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+
+                    <AlertPanel />
+
+
+                    <RiskSummary />
+
+
+                    <RiskTrend />
+
+
+                </section>
+
+
 
 
 
@@ -156,14 +193,14 @@ export default function Dashboard() {
 
                 {/* Risk Analyzer */}
 
-
-                <div className="bg-white rounded-xl shadow p-6">
+                <section className="bg-white rounded-xl shadow p-6">
 
 
                     <LocationAnalyzer />
 
 
-                </div>
+                </section>
+
 
 
 
@@ -174,109 +211,14 @@ export default function Dashboard() {
 
                 {/* GIS Map */}
 
-
-                <div className="bg-white rounded-xl shadow p-6">
+                <section className="bg-white rounded-xl shadow p-6">
 
 
                     <RiskMap />
 
 
-                </div>
+                </section>
 
-
-
-
-
-
-
-                {/* Risk Summary */}
-
-                <div className="bg-white rounded-xl shadow p-6">
-
-
-                    <h2 className="text-xl font-bold mb-4">
-
-                        Risk Monitoring Summary
-
-                    </h2>
-
-
-
-                    {summary.length === 0 ? (
-
-
-                        <p className="text-gray-500">
-
-                            No monitored locations available yet.
-
-                        </p>
-
-
-                    ) : (
-
-
-                        <div className="grid md:grid-cols-3 gap-4">
-
-
-                            {summary.map((item)=>(
-
-
-                                <div
-
-                                    key={item.location}
-
-                                    className="border rounded-lg p-4"
-
-                                >
-
-
-                                    <h3 className="font-bold">
-
-                                        {item.location}
-
-                                    </h3>
-
-
-
-                                    <p>
-
-                                        Risk:
-
-                                        {" "}
-
-                                        {item.risk_level}
-
-                                    </p>
-
-
-
-                                    <p>
-
-                                        Score:
-
-                                        {" "}
-
-                                        {item.risk_score}/100
-
-                                    </p>
-
-
-
-                                </div>
-
-
-                            ))}
-
-
-
-                        </div>
-
-
-                    )}
-
-
-
-                </div>
 
 
 
@@ -286,7 +228,6 @@ export default function Dashboard() {
 
 
         </div>
-
 
     );
 
