@@ -1,8 +1,10 @@
 from fastapi import APIRouter
 
-from backend.services.prediction import (
-    predict_risk
-)
+
+from backend.services.prediction import predict_risk
+
+
+from backend.alerts.alert_store import get_alerts
 
 
 
@@ -12,12 +14,24 @@ router = APIRouter()
 
 @router.post("/predict")
 
-def predict(data: dict):
+def predict(data:dict):
 
 
-    result = predict_risk(
+    return predict_risk(
         data
     )
 
 
-    return result
+
+
+@router.get("/alerts")
+
+def alerts():
+
+
+    return {
+
+        "alerts":
+        get_alerts()
+
+    }
