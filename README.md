@@ -2,25 +2,31 @@
 
 ## AI-Powered Early Warning System for Community Risks
 
-SentinelAI is a machine learning platform designed to predict environmental and social risks using multi-source data.
+SentinelAI is a machine learning platform designed to identify and predict environmental and social risks using multi-source data.
 
-## Objectives
+## Core Features
 
-- Predict flood risks
-- Predict drought risks
-- Analyze community vulnerability
-- Provide risk visualization
+- Risk prediction models
+- Geospatial analysis
+- Data pipelines
+- Machine learning API
+- Interactive dashboard
 
-## Technologies
+## Technology Stack
 
-- Python
-- Machine Learning
+Backend:
 - FastAPI
-- React
-- PostgreSQL
-- GIS
-- Docker
+- Python
 
-## Project Status
+Machine Learning:
+- Scikit-learn
+- Pandas
+- NumPy
 
-Currently under active development.
+Data:
+- Satellite data
+- Weather data
+- Community indicators
+
+Status:
+Development Phase
