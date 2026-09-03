@@ -2,58 +2,105 @@ from backend.database.models import LocationRisk
 
 
 
+
+
+
 def save_location_risk(
 
-    db,
-
-    name,
+    location,
 
     latitude,
 
     longitude,
 
-    result
+    risk_level,
+
+    risk_score,
+
+    db
 
 ):
 
 
-    location = LocationRisk(
+    existing = (
 
-        name=name,
+        db.query(LocationRisk)
 
-        latitude=latitude,
+        .filter(
 
-        longitude=longitude,
+            LocationRisk.location == location
 
-        risk_level=result["risk_level"],
+        )
 
-        confidence=result["confidence"]
+        .first()
 
     )
 
 
-    db.add(location)
+
+
+
+    if existing:
+
+
+        existing.latitude = latitude
+
+        existing.longitude = longitude
+
+        existing.risk_level = risk_level
+
+        existing.risk_score = risk_score
+
+
+
+
+    else:
+
+
+        record = LocationRisk(
+
+
+            location=location,
+
+
+            latitude=latitude,
+
+
+            longitude=longitude,
+
+
+            risk_level=risk_level,
+
+
+            risk_score=risk_score
+
+
+        )
+
+
+        db.add(record)
+
+
+
 
 
     db.commit()
 
 
-    db.refresh(location)
-
-
-    return location
 
 
 
+    return {
 
 
-def get_locations(db):
+        "location": location,
 
+        "latitude": latitude,
 
-    return (
+        "longitude": longitude,
 
-        db.query(LocationRisk)
+        "risk_level": risk_level,
 
-        .all()
+        "risk_score": risk_score
 
-    )
+    }

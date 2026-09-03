@@ -1,30 +1,22 @@
+import os
+
 import joblib
 
-from pathlib import Path
-
-
-from sqlalchemy.orm import Session
-
-
-from backend.database.models import RiskPrediction
+import pandas as pd
 
 
 
 
 
-MODEL_PATH = (
+# =====================================
+# Model Path
+# =====================================
 
-    Path(__file__)
+MODEL_PATH = os.path.join(
 
-    .resolve()
+    os.path.dirname(__file__),
 
-    .parent.parent.parent
-
-    / "machine_learning"
-
-    / "models"
-
-    / "risk_classifier.pkl"
+    "../../machine_learning/models/risk_classifier.pkl"
 
 )
 
@@ -32,17 +24,9 @@ MODEL_PATH = (
 
 
 
-model = joblib.load(
-
-    MODEL_PATH
-
-)
-
-
-
-
-
-
+# =====================================
+# Expected ML Features
+# =====================================
 
 FEATURE_COLUMNS = [
 
@@ -68,42 +52,141 @@ FEATURE_COLUMNS = [
 
 
 
+_model = None
 
 
-def predict_risk(
 
-    features: dict,
 
-    db: Session = None,
 
-    location: str = "Unknown"
+
+
+# =====================================
+# Load Machine Learning Model
+# =====================================
+
+def load_model():
+
+
+    global _model
+
+
+
+    if _model is None:
+
+
+        if not os.path.exists(MODEL_PATH):
+
+
+            raise FileNotFoundError(
+
+                f"Model file not found: {MODEL_PATH}"
+
+            )
+
+
+
+        try:
+
+
+            _model = joblib.load(
+
+                MODEL_PATH
+
+            )
+
+
+        except Exception as e:
+
+
+            raise Exception(
+
+                f"Unable to load ML model: {str(e)}"
+
+            )
+
+
+
+    return _model
+
+
+
+
+
+
+
+# =====================================
+# Prepare Input Features
+# =====================================
+
+def prepare_features(
+
+    features: dict
 
 ):
 
 
-    """
-    Run ML prediction and store result.
-
-    """
+    data = {}
 
 
 
-    model_input = {
+    for column in FEATURE_COLUMNS:
 
 
-        feature:
+        value = features.get(
 
-        features.get(
-
-            feature,
+            column,
 
             0
 
         )
 
-        for feature in FEATURE_COLUMNS
 
-    }
+        data[column] = value
+
+
+
+
+
+    dataframe = pd.DataFrame(
+
+        [data],
+
+        columns=FEATURE_COLUMNS
+
+    )
+
+
+
+    return dataframe
+
+
+
+
+
+
+
+# =====================================
+# Predict Risk
+# =====================================
+
+def predict_risk(
+
+    features: dict,
+
+    db=None
+
+):
+
+
+    model = load_model()
+
+
+
+    dataframe = prepare_features(
+
+        features
+
+    )
 
 
 
@@ -111,11 +194,7 @@ def predict_risk(
 
     prediction = model.predict(
 
-        [
-
-            model_input
-
-        ]
+        dataframe
 
     )[0]
 
@@ -123,7 +202,7 @@ def predict_risk(
 
 
 
-    probability = None
+    confidence = None
 
 
 
@@ -136,17 +215,25 @@ def predict_risk(
     ):
 
 
-        probability = max(
+        probabilities = model.predict_proba(
 
-            model.predict_proba(
+            dataframe
 
-                [
+        )[0]
 
-                    model_input
 
-                ]
 
-            )[0]
+        confidence = round(
+
+            float(
+
+                max(probabilities)
+
+            )
+
+            * 100,
+
+            2
 
         )
 
@@ -155,45 +242,70 @@ def predict_risk(
 
 
 
-    # Convert prediction
+    # Convert model output
 
-    risk_levels = {
+    # into SentinelAI risk levels
 
-        0: "LOW",
 
-        1: "MEDIUM",
+    if isinstance(
 
-        2: "HIGH"
+        prediction,
+
+        str
+
+    ):
+
+
+        risk_level = prediction.upper()
+
+
+
+    else:
+
+
+        risk_mapping = {
+
+
+            0: "LOW",
+
+            1: "MEDIUM",
+
+            2: "HIGH"
+
+        }
+
+
+
+        risk_level = risk_mapping.get(
+
+            int(prediction),
+
+            "MEDIUM"
+
+        )
+
+
+
+
+
+
+    # Assign readable score
+
+
+    score_mapping = {
+
+
+        "LOW": 30,
+
+        "MEDIUM": 65,
+
+        "HIGH": 90
 
     }
 
 
 
-
-
-    risk_level = risk_levels.get(
-
-        prediction,
-
-        str(prediction)
-
-    )
-
-
-
-
-
-
-    risk_score = {
-
-
-        "LOW": 30,
-
-        "MEDIUM": 60,
-
-        "HIGH": 85
-
-    }.get(
+    risk_score = score_mapping.get(
 
         risk_level,
 
@@ -207,13 +319,7 @@ def predict_risk(
 
 
 
-    result = {
-
-
-        "location":
-
-        location,
-
+    return {
 
 
         "risk_level":
@@ -230,104 +336,6 @@ def predict_risk(
 
         "confidence":
 
-        round(
-
-            probability * 100,
-
-            2
-
-        )
-
-        if probability
-
-        else None,
-
-
-
-        "features":
-
-        model_input
+        confidence
 
     }
-
-
-
-
-
-
-
-    # Save prediction
-
-    if db:
-
-
-        prediction_record = RiskPrediction(
-
-
-            location=location,
-
-
-            risk_level=risk_level,
-
-
-            risk_score=risk_score,
-
-
-            confidence=result["confidence"],
-
-
-
-            temperature=
-
-            model_input["temperature"],
-
-
-
-            rainfall=
-
-            model_input["rainfall"],
-
-
-
-            humidity=
-
-            model_input["humidity"],
-
-
-
-            ndvi=
-
-            model_input["ndvi"],
-
-
-
-            rainfall_anomaly=
-
-            model_input["rainfall_anomaly"]
-
-        )
-
-
-
-        db.add(
-
-            prediction_record
-
-        )
-
-
-        db.commit()
-
-
-        db.refresh(
-
-            prediction_record
-
-        )
-
-
-
-
-
-
-    return result

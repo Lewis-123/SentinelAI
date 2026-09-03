@@ -1,104 +1,95 @@
-from fastapi import (
-    APIRouter,
-    Depends,
-    HTTPException
-)
-
+from fastapi import APIRouter, Depends, HTTPException
 
 from sqlalchemy.orm import Session
 
 
-from backend.auth.dependencies import (
-    get_current_user
+from backend.database.database import get_db
+
+
+from backend.database.models import (
+
+    LocationRisk,
+
+    RiskPrediction
+
 )
 
 
-from backend.database.database import (
-    get_db
-)
+from backend.auth.dependencies import get_current_user
+
 
 
 from backend.services.automated_prediction import (
+
     predict_location_risk
-)
-
-
-from backend.gis.risk_map import (
-    generate_risk_map
-)
-
-
-
-
-
-router = APIRouter(
-
-    tags=["SentinelAI API"]
 
 )
+
+
+
+
+
+router = APIRouter()
+
+
 
 
 
 
 
 # =====================================
-# Risk Analysis Endpoint
+# Health Check
 # =====================================
 
-@router.get("/analyze/{city}")
+@router.get("/health")
+def health():
+
+    return {
+
+        "status": "healthy",
+
+        "service": "SentinelAI"
+
+    }
+
+
+
+
+
+
+
+
+
+# =====================================
+# Analyze Location
+# =====================================
+
+@router.get("/analyze/{location}")
+
 def analyze_location(
 
-    city: str,
+    location: str,
 
-    current_user = Depends(
-        get_current_user
-    ),
+    db: Session = Depends(get_db),
 
-    db: Session = Depends(
-        get_db
-    )
+    current_user=Depends(get_current_user)
 
 ):
 
-    """
-    Run AI risk prediction.
-
-    Prediction is stored
-    in database history.
-    """
 
     try:
 
 
         result = predict_location_risk(
 
-            city,
+            location,
 
             db
 
         )
 
 
-
-        return {
-
-
-            "user":
-
-            current_user["username"],
-
-
-
-            "role":
-
-            current_user["role"],
-
-
-
-            **result
-
-        }
-
+        return result
 
 
 
@@ -119,42 +110,80 @@ def analyze_location(
 
 
 
+
+
 # =====================================
-# GIS Risk Map Endpoint
+# Risk Map
 # =====================================
 
 @router.get("/risk-map")
+
 def risk_map(
 
-    current_user = Depends(
-        get_current_user
-    )
+    db: Session = Depends(get_db),
+
+    current_user=Depends(get_current_user)
 
 ):
 
-    """
-    Returns locations and
-    risk information for GIS map.
-    """
 
     try:
 
 
+        locations = (
+
+            db.query(LocationRisk)
+
+            .all()
+
+        )
+
+
+
         return {
 
 
-            "user":
-
-            current_user["username"],
+            "locations":[
 
 
+                {
 
-            "locations":
 
-            generate_risk_map()
+                    "location":
+
+                    item.location,
+
+
+                    "latitude":
+
+                    item.latitude,
+
+
+                    "longitude":
+
+                    item.longitude,
+
+
+                    "risk_level":
+
+                    item.risk_level,
+
+
+                    "risk_score":
+
+                    item.risk_score
+
+
+                }
+
+
+                for item in locations
+
+
+            ]
+
 
         }
-
 
 
 
@@ -175,31 +204,80 @@ def risk_map(
 
 
 
+
+
 # =====================================
-# Current User Endpoint
+# Prediction History
 # =====================================
 
-@router.get("/user")
-def user_profile(
+@router.get("/history")
 
-    current_user = Depends(
-        get_current_user
-    )
+def history(
+
+    db: Session = Depends(get_db),
+
+    current_user=Depends(get_current_user)
 
 ):
+
+
+    records = (
+
+        db.query(RiskPrediction)
+
+        .order_by(
+
+            RiskPrediction.created_at.desc()
+
+        )
+
+        .all()
+
+    )
+
+
 
 
     return {
 
 
-        "username":
-
-        current_user["username"],
+        "history":[
 
 
+            {
 
-        "role":
 
-        current_user["role"]
+                "location":
+
+                item.location,
+
+
+                "risk_level":
+
+                item.risk_level,
+
+
+                "risk_score":
+
+                item.risk_score,
+
+
+                "confidence":
+
+                item.confidence,
+
+
+                "date":
+
+                item.created_at
+
+
+            }
+
+
+            for item in records
+
+
+        ]
 
     }

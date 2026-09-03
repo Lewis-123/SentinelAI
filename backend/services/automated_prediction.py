@@ -11,14 +11,23 @@ from backend.connectors import (
 )
 
 
+
 from backend.services.prediction import (
+
     predict_risk
+
 )
+
 
 
 from backend.services.location import (
+
     save_location_risk
+
 )
+
+
+
 
 
 
@@ -27,6 +36,7 @@ CITY_COORDINATES = {
 
 
     "Nairobi":
+
     {
 
         "latitude": -1.286389,
@@ -36,7 +46,21 @@ CITY_COORDINATES = {
     },
 
 
+
+    "nairobi":
+
+    {
+
+        "latitude": -1.286389,
+
+        "longitude": 36.817223
+
+    },
+
+
+
     "Turkana":
+
     {
 
         "latitude": 3.1167,
@@ -46,7 +70,9 @@ CITY_COORDINATES = {
     },
 
 
+
     "Mombasa":
+
     {
 
         "latitude": -4.0435,
@@ -61,6 +87,9 @@ CITY_COORDINATES = {
 
 
 
+
+
+
 def predict_location_risk(
 
     city,
@@ -68,20 +97,6 @@ def predict_location_risk(
     db
 
 ):
-
-
-    """
-    Complete multi-source risk pipeline.
-
-    Sources:
-
-    - Weather API
-    - Satellite data
-    - Population data
-    - Vulnerability data
-
-    """
-
 
 
     coordinates = CITY_COORDINATES.get(
@@ -92,7 +107,20 @@ def predict_location_risk(
 
 
 
-    if not coordinates:
+    if coordinates is None:
+
+
+        coordinates = CITY_COORDINATES.get(
+
+            city.capitalize()
+
+        )
+
+
+
+
+
+    if coordinates is None:
 
 
         raise Exception(
@@ -105,7 +133,6 @@ def predict_location_risk(
 
 
 
-    # 1. Weather data
 
 
     weather = fetch_weather(
@@ -115,10 +142,6 @@ def predict_location_risk(
     )
 
 
-
-
-
-    # 2. Satellite/environment data
 
 
     satellite = fetch_satellite_data(
@@ -132,10 +155,6 @@ def predict_location_risk(
 
 
 
-
-    # 3. Population data
-
-
     population = fetch_population_data(
 
         city
@@ -143,10 +162,6 @@ def predict_location_risk(
     )
 
 
-
-
-
-    # 4. Vulnerability data
 
 
     vulnerability = fetch_vulnerability_data(
@@ -160,15 +175,19 @@ def predict_location_risk(
 
 
 
-    # Combine all features
-
 
     features = {
 
 
         "temperature":
 
-        weather["temperature"],
+        weather.get(
+
+            "temperature",
+
+            25
+
+        ),
 
 
 
@@ -186,37 +205,73 @@ def predict_location_risk(
 
         "humidity":
 
-        weather["humidity"],
+        weather.get(
+
+            "humidity",
+
+            50
+
+        ),
 
 
 
         "population":
 
-        population["population"],
+        population.get(
+
+            "population",
+
+            0
+
+        ),
 
 
 
         "density":
 
-        population["density"],
+        population.get(
+
+            "density",
+
+            0
+
+        ),
 
 
 
         "poverty_rate":
 
-        vulnerability["poverty_rate"],
+        vulnerability.get(
+
+            "poverty_rate",
+
+            0
+
+        ),
 
 
 
         "ndvi":
 
-        satellite["ndvi"],
+        satellite.get(
+
+            "ndvi",
+
+            0.5
+
+        ),
 
 
 
         "rainfall_anomaly":
 
-        satellite["rainfall_anomaly"]
+        satellite.get(
+
+            "rainfall_anomaly",
+
+            0
+
+        )
 
     }
 
@@ -224,8 +279,6 @@ def predict_location_risk(
 
 
 
-
-    # Run ML prediction
 
 
     prediction = predict_risk(
@@ -240,12 +293,9 @@ def predict_location_risk(
 
 
 
-    # Save GIS location
 
 
     save_location_risk(
-
-        db,
 
         city,
 
@@ -253,7 +303,11 @@ def predict_location_risk(
 
         coordinates["longitude"],
 
-        prediction
+        prediction["risk_level"],
+
+        prediction["risk_score"],
+
+        db
 
     )
 
@@ -261,19 +315,21 @@ def predict_location_risk(
 
 
 
+
+
     prediction["location"] = city
 
+    prediction["features"] = features
 
     prediction["weather"] = weather
 
-
     prediction["environment"] = satellite
-
 
     prediction["population"] = population
 
-
     prediction["vulnerability"] = vulnerability
+
+
 
 
 
