@@ -18,6 +18,11 @@ from backend.services.weather import (
 )
 
 
+from backend.services.automated_prediction import (
+    predict_location_risk
+)
+
+
 from backend.alerts.alert_store import (
     get_alerts
 )
@@ -39,14 +44,12 @@ router = APIRouter()
 
 
 
-
 @router.get("/weather/{city}")
 
 def weather(city:str):
 
 
     try:
-
 
         return get_weather(
             city
@@ -63,6 +66,29 @@ def weather(city:str):
             detail=str(e)
 
         )
+
+
+
+
+
+@router.get("/analyze/{city}")
+
+def analyze_location(
+
+    city:str,
+
+    db:Session = Depends(get_db)
+
+):
+
+
+    return predict_location_risk(
+
+        city,
+
+        db
+
+    )
 
 
 
@@ -106,7 +132,6 @@ def read_alerts(
 
 
     return {
-
 
         "alerts":[
 
