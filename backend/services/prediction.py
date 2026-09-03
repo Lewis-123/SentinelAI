@@ -1,246 +1,277 @@
-import joblib
-import pandas as pd
-
 from pathlib import Path
 
+import joblib
 
-from machine_learning.explainability.explainer import (
-    explain_prediction
-)
-
-
-from backend.alerts.alert_engine import (
-    generate_alert
-)
+import pandas as pd
 
 
-from backend.alerts.alert_store import (
-    save_alert
-)
-
-
-from backend.services.history import (
-    save_prediction_history
+from backend.services.risk_score import (
+    calculate_risk_score,
+    classify_risk
 )
 
 
 
-# Project root
+# ==========================
+# Load trained ML model
+# ==========================
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 
 
-
-# ML model path
-
 MODEL_PATH = (
-
     BASE_DIR
-
     / "machine_learning"
-
     / "models"
-
     / "risk_classifier.pkl"
+)
+
+
+
+model = joblib.load(
+
+    MODEL_PATH
 
 )
 
 
 
-# Load model
-
-model = joblib.load(
+print(
+    "Loaded model:",
     MODEL_PATH
 )
 
 
 
-# Risk labels
-
-RISK_LABELS = {
-
-    0: "LOW",
-
-    1: "MEDIUM",
-
-    2: "HIGH"
-
-}
+print(
+    "Model features:",
+    model.feature_names_in_
+)
 
 
 
 
+
+# ==========================
+# Prediction Function
+# ==========================
 
 def predict_risk(
+
     features: dict,
-    db
+
+    db=None
+
 ):
 
     """
-    Generate risk prediction,
-    explanation, alert, and save history.
+    SentinelAI Risk Prediction Engine
+
+
+    Expected features:
+
+    temperature
+    rainfall
+    humidity
+    population
+    density
+    poverty_rate
+    ndvi
+    rainfall_anomaly
+
     """
 
 
 
-    # Convert input to dataframe
+    # Convert dictionary into dataframe
 
     dataframe = pd.DataFrame(
+
         [features]
+
     )
+
+
+
+    print(
+        "\nPREDICTION INPUT FEATURES"
+    )
+
+    print(
+        dataframe.columns
+    )
+
+    print(
+        dataframe
+    )
+
+
+
+
+    # Ensure feature order matches model
+
+    expected_features = list(
+
+        model.feature_names_in_
+
+    )
+
+
+
+    missing_features = [
+
+        feature
+
+        for feature in expected_features
+
+        if feature not in dataframe.columns
+
+    ]
+
+
+
+    if missing_features:
+
+
+        raise ValueError(
+
+            f"Missing model features: {missing_features}. "
+            f"Received: {list(dataframe.columns)}"
+
+        )
+
+
+
+
+    dataframe = dataframe[
+
+        expected_features
+
+    ]
+
 
 
 
     # Model prediction
 
     prediction = model.predict(
+
         dataframe
+
     )[0]
 
 
 
-    # Prediction confidence
+
+    # Probability
 
     probabilities = model.predict_proba(
+
         dataframe
+
     )[0]
 
 
 
-    confidence = round(
+    confidence = max(
 
-        float(
-            max(probabilities)
-        ) * 100,
-
-        2
+        probabilities
 
     )
 
 
 
-    # SHAP explanation
 
-    explanation = explain_prediction(
-        features
+    # Convert prediction label
+
+    if hasattr(
+
+        model,
+
+        "classes_"
+
+    ):
+
+
+        model_prediction = model.classes_[
+
+            prediction
+
+        ]
+
+
+    else:
+
+
+        model_prediction = prediction
+
+
+
+
+
+    # Calculate continuous risk score
+
+    risk_score = calculate_risk_score(
+
+        features,
+
+        confidence * 100
+
     )
 
 
 
-    # Select top risk drivers
 
-    drivers = [
+    # Convert score into category
 
-        item[0]
+    risk_level = classify_risk(
 
-        for item in explanation[:3]
+        risk_score
 
-    ]
-
+    )
 
 
-    # Prediction result
-
-    result = {
 
 
-        "risk_score":
-
-        int(prediction),
-
+    return {
 
 
         "risk_level":
 
-        RISK_LABELS.get(
+        risk_level,
 
-            int(prediction),
 
-            "UNKNOWN"
 
-        ),
+        "risk_score":
+
+        risk_score,
 
 
 
         "confidence":
 
-        confidence,
+        round(
+
+            confidence * 100,
+
+            2
+
+        ),
 
 
 
-        "risk_drivers":
+        "model_prediction":
 
-        drivers
+        str(
 
-    }
+            model_prediction
 
-
-
-    # Generate alert
-
-    alert = generate_alert(
-        result
-    )
+        ),
 
 
 
-    # Save alert in database
+        "features":
 
-    saved_alert = save_alert(
-
-        db,
-
-        alert
-
-    )
-
-
-
-    # Save prediction history
-
-    save_prediction_history(
-
-        db,
-
-        features,
-
-        result
-
-    )
-
-
-
-    # Attach alert details
-
-    result["alert"] = {
-
-
-        "id":
-
-        saved_alert.id,
-
-
-        "location":
-
-        saved_alert.location,
-
-
-        "severity":
-
-        saved_alert.severity,
-
-
-        "message":
-
-        saved_alert.message,
-
-
-        "timestamp":
-
-        saved_alert.timestamp
+        features
 
     }
-
-
-
-    return result

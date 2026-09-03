@@ -20,6 +20,7 @@ def run_risk_pipeline(
         satellite
 
     )
+    print(features.columns)
 
 
 

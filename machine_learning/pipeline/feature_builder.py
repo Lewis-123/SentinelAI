@@ -3,53 +3,56 @@ import pandas as pd
 
 
 def build_features(
-    weather_data,
-    population_data,
-    satellite_data
+
+    weather,
+
+    population,
+
+    satellite
+
 ):
-
-    """
-    Creates ML features matching
-    the trained SentinelAI model.
-    """
-
 
 
     features = {
 
 
-        "rainfall":
-        weather_data["rainfall"],
+        "temperature": weather["temperature"],
+
+
+        "rainfall": weather.get(
+            "rainfall",
+            0
+        ),
+
+
+        "humidity": weather["humidity"],
 
 
 
-        "temperature":
-        weather_data["temperature"],
+        "population": population["population"],
+
+
+        "density": population["density"],
+
+
+        "poverty_rate": population["poverty_rate"],
 
 
 
-        "humidity":
-        weather_data["humidity"],
+        "ndvi": satellite["ndvi"],
 
 
-
-        "population":
-        population_data["population"],
-
-
-
-        "density":
-        population_data["density"],
-
-
-
-        "poverty_rate":
-        population_data["poverty_rate"]
+        "rainfall_anomaly": satellite["rainfall_anomaly"]
 
     }
 
 
 
-    return pd.DataFrame(
+    df = pd.DataFrame(
+
         [features]
+
     )
+
+
+    return df
