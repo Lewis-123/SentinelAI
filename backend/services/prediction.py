@@ -3,14 +3,22 @@ import pandas as pd
 from pathlib import Path
 
 
-MODEL_PATH = Path(
-    "../../machine_learning/models/risk_classifier.pkl"
+# Find project root
+BASE_DIR = Path(__file__).resolve().parents[2]
+
+
+# Model location
+MODEL_PATH = (
+    BASE_DIR
+    / "machine_learning"
+    / "models"
+    / "risk_classifier.pkl"
 )
 
 
-model = joblib.load(
-    MODEL_PATH
-)
+# Load trained model
+model = joblib.load(MODEL_PATH)
+
 
 
 def predict_risk(features):
