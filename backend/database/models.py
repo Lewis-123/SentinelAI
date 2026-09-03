@@ -14,11 +14,11 @@ from backend.database.connection import Base
 
 
 
+
 class Alert(Base):
 
 
     __tablename__ = "alerts"
-
 
 
     id = Column(
@@ -32,32 +32,16 @@ class Alert(Base):
     )
 
 
-    location = Column(
-
-        String
-
-    )
+    location = Column(String)
 
 
-    risk_level = Column(
-
-        String
-
-    )
+    risk_level = Column(String)
 
 
-    severity = Column(
-
-        String
-
-    )
+    severity = Column(String)
 
 
-    message = Column(
-
-        String
-
-    )
+    message = Column(String)
 
 
     timestamp = Column(
@@ -91,6 +75,84 @@ class PredictionHistory(Base):
     )
 
 
+    risk_level = Column(String)
+
+
+    confidence = Column(Float)
+
+
+    rainfall = Column(Float)
+
+
+    temperature = Column(Float)
+
+
+    humidity = Column(Float)
+
+
+    population = Column(Integer)
+
+
+    density = Column(Float)
+
+
+    poverty_rate = Column(Float)
+
+
+    timestamp = Column(
+
+        DateTime,
+
+        default=datetime.utcnow
+
+    )
+
+
+
+
+
+
+
+class LocationRisk(Base):
+
+
+    __tablename__ = "location_risk"
+
+
+
+    id = Column(
+
+        Integer,
+
+        primary_key=True,
+
+        index=True
+
+    )
+
+
+    name = Column(
+
+        String,
+
+        unique=True
+
+    )
+
+
+    latitude = Column(
+
+        Float
+
+    )
+
+
+    longitude = Column(
+
+        Float
+
+    )
+
 
     risk_level = Column(
 
@@ -99,61 +161,11 @@ class PredictionHistory(Base):
     )
 
 
-
     confidence = Column(
 
         Float
 
     )
-
-
-
-    rainfall = Column(
-
-        Float
-
-    )
-
-
-
-    temperature = Column(
-
-        Float
-
-    )
-
-
-
-    humidity = Column(
-
-        Float
-
-    )
-
-
-
-    population = Column(
-
-        Integer
-
-    )
-
-
-
-    density = Column(
-
-        Float
-
-    )
-
-
-
-    poverty_rate = Column(
-
-        Float
-
-    )
-
 
 
     timestamp = Column(
