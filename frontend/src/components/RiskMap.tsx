@@ -1,148 +1,221 @@
 import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup
+    MapContainer,
+    TileLayer,
+    Marker,
+    Popup
 } from "react-leaflet";
+
 
 import "leaflet/dist/leaflet.css";
 
 
-
-const communities = [
-
-  {
-    name:"Turkana",
-    position:[
-      3.312,
-      35.565
-    ] as [number,number],
-    risk:"HIGH"
-  },
+import L from "leaflet";
 
 
-  {
-    name:"Garissa",
-    position:[
-      -0.453,
-      39.646
-    ] as [number,number],
-    risk:"HIGH"
-  },
+
+// Fix default marker issue
+
+delete (
+    L.Icon.Default.prototype as any
+)._getIconUrl;
 
 
-  {
-    name:"Nairobi",
-    position:[
-      -1.286,
-      36.817
-    ] as [number,number],
-    risk:"LOW"
-  }
+L.Icon.Default.mergeOptions({
 
+    iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+
+    iconUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+
+    shadowUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png"
+
+});
+
+
+
+interface RiskLocation {
+
+
+    name:string;
+
+    latitude:number;
+
+    longitude:number;
+
+    risk:string;
+
+}
+
+
+
+
+const locations:RiskLocation[] = [
+
+
+    {
+
+        name:"Nairobi",
+
+        latitude:-1.286389,
+
+        longitude:36.817223,
+
+        risk:"MEDIUM"
+
+    },
+
+
+    {
+
+        name:"Turkana",
+
+        latitude:3.1167,
+
+        longitude:35.6,
+
+        risk:"HIGH"
+
+    },
+
+
+    {
+
+        name:"Mombasa",
+
+        latitude:-4.0435,
+
+        longitude:39.6682,
+
+        risk:"LOW"
+
+    }
 
 ];
+
 
 
 
 function RiskMap(){
 
 
-  return (
+    return (
 
-    <div className="bg-white rounded-xl shadow p-6 mt-10">
-
-
-      <h2 className="text-xl font-bold mb-5">
-
-        Community Risk Map
-
-      </h2>
+        <div className="bg-white rounded-xl shadow p-6 mt-10">
 
 
+            <h2 className="text-2xl font-bold mb-5">
 
-      <MapContainer
+                Geographic Risk Intelligence Map
 
-        center={[
-          0.0236,
-          37.9062
-        ]}
-
-        zoom={6}
-
-        style={{
-          height:"500px",
-          width:"100%"
-        }}
-
-      >
-
-
-        <TileLayer
-
-          attribution='&copy; OpenStreetMap'
-
-          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-
-        />
+            </h2>
 
 
 
-        {
-          communities.map(
-            (community)=>(
+            <MapContainer
 
 
-              <Marker
+                center={[
+                    -1.286389,
+                    36.817223
+                ]}
 
-                key={community.name}
 
-                position={
-                  community.position
+                zoom={6}
+
+
+                style={{
+
+                    height:"500px",
+
+                    width:"100%"
+
+                }}
+
+
+            >
+
+
+                <TileLayer
+
+
+                    attribution='&copy; OpenStreetMap contributors'
+
+
+                    url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+
+
+                />
+
+
+
+                {
+                    locations.map(
+
+                        (location,index)=>(
+
+
+                            <Marker
+
+
+                                key={index}
+
+
+                                position={[
+
+                                    location.latitude,
+
+                                    location.longitude
+
+                                ]}
+
+
+                            >
+
+
+                                <Popup>
+
+
+                                    <strong>
+
+                                        {location.name}
+
+                                    </strong>
+
+
+                                    <br />
+
+
+                                    Risk Level:
+
+                                    {" "}
+
+                                    {location.risk}
+
+
+                                </Popup>
+
+
+                            </Marker>
+
+
+                        )
+
+                    )
                 }
 
-              >
 
 
-                <Popup>
-
-                  <strong>
-
-                    {community.name}
-
-                  </strong>
+            </MapContainer>
 
 
-                  <br/>
+        </div>
 
-
-                  Risk Level:
-
-                  {" "}
-
-                  {community.risk}
-
-
-                </Popup>
-
-
-              </Marker>
-
-
-            )
-          )
-        }
-
-
-      </MapContainer>
-
-
-
-    </div>
-
-  )
+    )
 
 }
+
 
 
 export default RiskMap;
