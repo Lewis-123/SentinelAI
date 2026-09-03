@@ -1,43 +1,41 @@
 import RiskPrediction from "./RiskPrediction";
+import RiskAnalytics from "./RiskAnalytics";
 
 
-function Dashboard() {
+function Dashboard(){
 
   return (
 
     <div className="min-h-screen bg-gray-100 p-8">
 
 
-      {/* Header */}
-
       <div className="mb-8">
 
-        <h1 className="text-4xl font-bold text-gray-900">
+        <h1 className="text-4xl font-bold">
 
           SentinelAI
 
         </h1>
 
 
-        <p className="text-gray-600 mt-2 text-lg">
+        <p className="text-gray-600 mt-2">
 
           AI-powered Community Risk Intelligence Platform
 
         </p>
 
+
       </div>
 
 
 
-      {/* Summary Cards */}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
 
-
         <div className="bg-white rounded-xl shadow p-6">
 
-          <h2 className="text-gray-600 font-semibold">
+          <h2 className="font-semibold">
 
             Environmental Monitoring
 
@@ -50,13 +48,6 @@ function Dashboard() {
 
           </p>
 
-
-          <p className="text-sm text-gray-500 mt-2">
-
-            Climate and environmental indicators
-
-          </p>
-
         </div>
 
 
@@ -64,23 +55,16 @@ function Dashboard() {
 
         <div className="bg-white rounded-xl shadow p-6">
 
-          <h2 className="text-gray-600 font-semibold">
+          <h2 className="font-semibold">
 
-            AI Predictions
+            AI Engine
 
           </h2>
 
 
           <p className="text-3xl font-bold mt-3 text-blue-600">
 
-            Ready
-
-          </p>
-
-
-          <p className="text-sm text-gray-500 mt-2">
-
-            Machine learning risk classification
+            Online
 
           </p>
 
@@ -91,9 +75,9 @@ function Dashboard() {
 
         <div className="bg-white rounded-xl shadow p-6">
 
-          <h2 className="text-gray-600 font-semibold">
+          <h2 className="font-semibold">
 
-            Active Alerts
+            Alerts
 
           </h2>
 
@@ -104,13 +88,6 @@ function Dashboard() {
 
           </p>
 
-
-          <p className="text-sm text-gray-500 mt-2">
-
-            Community risk notifications
-
-          </p>
-
         </div>
 
 
@@ -119,20 +96,16 @@ function Dashboard() {
 
 
 
-      {/* Prediction Section */}
-
-      <div className="mt-10">
-
-        <RiskPrediction />
-
-      </div>
+      <RiskAnalytics />
 
 
+
+      <RiskPrediction />
 
 
     </div>
 
-  );
+  )
 
 }
 
