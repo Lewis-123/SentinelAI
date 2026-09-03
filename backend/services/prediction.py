@@ -20,13 +20,13 @@ from backend.alerts.alert_store import (
 
 
 
-# Project root directory
+# Project root
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 
 
 
-# ML model location
+# Model path
 
 MODEL_PATH = (
 
@@ -42,7 +42,7 @@ MODEL_PATH = (
 
 
 
-# Load trained model
+# Load ML model
 
 model = joblib.load(
     MODEL_PATH
@@ -50,7 +50,7 @@ model = joblib.load(
 
 
 
-# Risk class mapping
+# Risk mapping
 
 RISK_LABELS = {
 
@@ -65,20 +65,27 @@ RISK_LABELS = {
 
 
 
-
-def predict_risk(features: dict):
+def predict_risk(
+    features: dict,
+    db
+):
 
     """
-    Run SentinelAI risk prediction.
+    Predict community risk level.
 
-    Input:
-        Dictionary containing ML features
+    Parameters:
+        features:
+            ML input features
 
-    Output:
-        Risk prediction,
-        confidence,
-        explanations,
-        generated alert
+        db:
+            SQLAlchemy database session
+
+    Returns:
+        Prediction result with:
+        - risk level
+        - confidence
+        - SHAP drivers
+        - generated alert
     """
 
 
@@ -91,7 +98,7 @@ def predict_risk(features: dict):
 
 
 
-    # Generate prediction
+    # Prediction
 
     prediction = model.predict(
         dataframe
@@ -99,12 +106,11 @@ def predict_risk(features: dict):
 
 
 
-    # Generate confidence score
+    # Confidence score
 
     probabilities = model.predict_proba(
         dataframe
     )[0]
-
 
 
     confidence = round(
@@ -119,7 +125,7 @@ def predict_risk(features: dict):
 
 
 
-    # Generate SHAP explanation
+    # Explainable AI
 
     explanation = explain_prediction(
         features
@@ -127,7 +133,7 @@ def predict_risk(features: dict):
 
 
 
-    # Select top risk factors
+    # Top three contributing factors
 
     drivers = [
 
@@ -139,7 +145,7 @@ def predict_risk(features: dict):
 
 
 
-    # Main prediction response
+    # Main response
 
     result = {
 
@@ -176,7 +182,7 @@ def predict_risk(features: dict):
 
 
 
-    # Generate alert from prediction
+    # Generate alert
 
     alert = generate_alert(
         result
@@ -184,17 +190,48 @@ def predict_risk(features: dict):
 
 
 
-    # Store alert
+    # Save alert permanently
 
-    save_alert(
+    saved_alert = save_alert(
+
+        db,
+
         alert
+
     )
 
 
 
-    # Attach alert information
+    # Add alert information
 
-    result["alert"] = alert
+    result["alert"] = {
+
+
+        "id":
+
+        saved_alert.id,
+
+
+        "location":
+
+        saved_alert.location,
+
+
+        "severity":
+
+        saved_alert.severity,
+
+
+        "message":
+
+        saved_alert.message,
+
+
+        "timestamp":
+
+        saved_alert.timestamp
+
+    }
 
 
 
