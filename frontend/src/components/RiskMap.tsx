@@ -1,3 +1,8 @@
+import { useEffect, useState } from "react";
+
+import axios from "axios";
+
+
 import {
     MapContainer,
     TileLayer,
@@ -13,11 +18,12 @@ import L from "leaflet";
 
 
 
-// Fix default marker issue
+// Fix Leaflet marker icons
 
 delete (
     L.Icon.Default.prototype as any
 )._getIconUrl;
+
 
 
 L.Icon.Default.mergeOptions({
@@ -25,8 +31,10 @@ L.Icon.Default.mergeOptions({
     iconRetinaUrl:
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
 
+
     iconUrl:
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+
 
     shadowUrl:
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png"
@@ -35,7 +43,9 @@ L.Icon.Default.mergeOptions({
 
 
 
-interface RiskLocation {
+
+
+interface LocationRisk {
 
 
     name:string;
@@ -46,53 +56,10 @@ interface RiskLocation {
 
     risk:string;
 
+    confidence:number;
+
 }
 
-
-
-
-const locations:RiskLocation[] = [
-
-
-    {
-
-        name:"Nairobi",
-
-        latitude:-1.286389,
-
-        longitude:36.817223,
-
-        risk:"MEDIUM"
-
-    },
-
-
-    {
-
-        name:"Turkana",
-
-        latitude:3.1167,
-
-        longitude:35.6,
-
-        risk:"HIGH"
-
-    },
-
-
-    {
-
-        name:"Mombasa",
-
-        latitude:-4.0435,
-
-        longitude:39.6682,
-
-        risk:"LOW"
-
-    }
-
-];
 
 
 
@@ -100,9 +67,77 @@ const locations:RiskLocation[] = [
 function RiskMap(){
 
 
+
+    const [locations,setLocations] =
+        useState<LocationRisk[]>([]);
+
+
+
+
+    const fetchLocations = async()=>{
+
+
+        try{
+
+
+            const response = await axios.get(
+
+                "http://127.0.0.1:8000/locations"
+
+            );
+
+
+
+            setLocations(
+
+                response.data.locations
+
+            );
+
+
+        }
+
+
+        catch(error){
+
+
+            console.error(
+
+                "Failed loading locations",
+
+                error
+
+            );
+
+
+        }
+
+
+    };
+
+
+
+
+
+    useEffect(()=>{
+
+
+        fetchLocations();
+
+
+
+    },[]);
+
+
+
+
+
+
     return (
 
+
         <div className="bg-white rounded-xl shadow p-6 mt-10">
+
 
 
             <h2 className="text-2xl font-bold mb-5">
@@ -113,12 +148,17 @@ function RiskMap(){
 
 
 
+
+
             <MapContainer
 
 
                 center={[
+
                     -1.286389,
+
                     36.817223
+
                 ]}
 
 
@@ -137,10 +177,11 @@ function RiskMap(){
             >
 
 
+
                 <TileLayer
 
 
-                    attribution='&copy; OpenStreetMap contributors'
+                    attribution="&copy; OpenStreetMap contributors"
 
 
                     url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -150,7 +191,10 @@ function RiskMap(){
 
 
 
+
+
                 {
+
                     locations.map(
 
                         (location,index)=>(
@@ -164,9 +208,12 @@ function RiskMap(){
 
                                 position={[
 
+
                                     location.latitude,
 
+
                                     location.longitude
+
 
                                 ]}
 
@@ -174,27 +221,51 @@ function RiskMap(){
                             >
 
 
+
                                 <Popup>
 
 
-                                    <strong>
 
-                                        {location.name}
-
-                                    </strong>
+                                    <div>
 
 
-                                    <br />
+                                        <h3 className="font-bold">
+
+                                            {location.name}
+
+                                        </h3>
 
 
-                                    Risk Level:
 
-                                    {" "}
+                                        <p>
 
-                                    {location.risk}
+                                            Risk:
+
+                                            {" "}
+
+                                            {location.risk}
+
+                                        </p>
+
+
+
+                                        <p>
+
+                                            Confidence:
+
+                                            {" "}
+
+                                            {location.confidence}%
+
+                                        </p>
+
+
+                                    </div>
+
 
 
                                 </Popup>
+
 
 
                             </Marker>
@@ -203,14 +274,18 @@ function RiskMap(){
                         )
 
                     )
+
                 }
+
 
 
 
             </MapContainer>
 
 
+
         </div>
+
 
     )
 
