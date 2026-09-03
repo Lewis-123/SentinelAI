@@ -8,8 +8,17 @@ from backend.monitoring.alerts import (
 )
 
 
+from backend.notifications.notification_service import (
+    send_notification
+)
 
 
+
+
+
+# Temporary in-memory storage
+
+# Later replaced with database storage
 
 risk_history = {}
 
@@ -19,108 +28,203 @@ risk_history = {}
 
 def monitor_location(
 
-    location
+    location: str
 
 ):
 
+    """
+    Monitor a location automatically.
+
+    Workflow:
+
+    1. Fetch latest data
+    2. Run AI prediction
+    3. Compare previous risk
+    4. Generate alert if risk changes
+    5. Send notifications
 
     """
-    Automatically checks
-    location risk.
-    """
 
 
 
-    result = predict_location_risk(
-
-        location,
-
-        None
-
-    )
+    try:
 
 
-
-    current_risk = result[
-
-        "risk_level"
-
-    ]
+        # Run SentinelAI prediction
 
 
+        result = predict_location_risk(
 
-    current_score = result[
+            location,
 
-        "risk_score"
+            None
 
-    ]
+        )
 
 
 
 
+        current_risk = result.get(
 
-    previous = risk_history.get(
+            "risk_level",
 
-        location
+            "UNKNOWN"
 
-    )
-
-
-
-
-
-    alert = None
+        )
 
 
 
-    if previous:
+        current_score = result.get(
+
+            "risk_score",
+
+            0
+
+        )
 
 
-        if previous["risk_level"] != current_risk:
 
 
-            alert = create_alert(
 
-                location,
+        previous = risk_history.get(
 
-                previous["risk_level"],
+            location
 
-                current_risk,
+        )
 
-                current_score
+
+
+        alert = None
+
+
+
+
+
+        # Detect risk change
+
+
+        if previous:
+
+
+
+            previous_risk = previous.get(
+
+                "risk_level"
 
             )
 
 
 
-
-
-    risk_history[location] = {
-
-
-        "risk_level":
-
-        current_risk,
-
-
-        "risk_score":
-
-        current_score
-
-    }
+            if previous_risk != current_risk:
 
 
 
-    return {
+                alert = create_alert(
+
+                    location,
+
+                    previous_risk,
+
+                    current_risk,
+
+                    current_score
+
+                )
 
 
-        "prediction":
-
-        result,
 
 
-        "alert":
+                # Send notifications
 
-        alert
 
-    }
+                send_notification(
+
+                    alert,
+
+                    {
+
+                        "email":
+
+                        "admin@sentinelai.com",
+
+
+
+                        "phone":
+
+                        "+254700000000"
+
+                    }
+
+                )
+
+
+
+
+
+
+        # Update history
+
+
+        risk_history[location] = {
+
+
+            "risk_level":
+
+            current_risk,
+
+
+
+            "risk_score":
+
+            current_score
+
+        }
+
+
+
+
+
+
+        return {
+
+
+            "location":
+
+            location,
+
+
+
+            "prediction":
+
+            result,
+
+
+
+            "alert":
+
+            alert
+
+        }
+
+
+
+
+
+    except Exception as e:
+
+
+
+        return {
+
+
+            "location":
+
+            location,
+
+
+
+            "error":
+
+            str(e)
+
+        }
