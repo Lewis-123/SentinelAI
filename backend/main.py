@@ -1,16 +1,35 @@
 from fastapi import FastAPI
 
+from backend.api.routes import router
+
+
 
 app = FastAPI(
-    title="SentinelAI API",
-    description="AI-powered community risk prediction API",
-    version="1.0.0"
+
+    title="SentinelAI",
+
+    description=
+    "AI-powered community risk prediction system",
+
+    version="1.0"
+
 )
+
+
+
+app.include_router(
+    router
+)
+
 
 
 @app.get("/")
 def home():
+
     return {
-        "system": "SentinelAI",
-        "status": "online"
+
+        "system":"SentinelAI",
+
+        "status":"running"
+
     }
