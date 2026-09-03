@@ -1,109 +1,183 @@
 import { useState } from "react";
-import axios from "axios";
 
 
-interface Result {
 
-    location:string;
+interface RiskResult {
 
-    risk_level:string;
+    location: string;
 
-    confidence:number;
+    risk_level: string;
 
-    risk_drivers:string[];
+    risk_score: number;
 
-    weather:{
-        temperature:number;
-        humidity:number;
-        weather:string;
+    confidence: number;
+
+    model_prediction?: string;
+
+
+    environment?: {
+
+        ndvi: number;
+
+        rainfall_anomaly: number;
+
+    };
+
+
+    features?: {
+
+        temperature: number;
+
+        rainfall: number;
+
+        humidity: number;
+
+        population: number;
+
+        density: number;
+
+        poverty_rate: number;
+
+        ndvi: number;
+
+        rainfall_anomaly: number;
+
     };
 
 }
 
 
 
-function LocationAnalyzer(){
+export default function LocationAnalyzer() {
 
 
-    const [city,setCity] =
-        useState("");
+    const [location, setLocation] = useState("");
 
+    const [result, setResult] = useState<RiskResult | null>(null);
 
+    const [loading, setLoading] = useState(false);
 
-    const [result,setResult] =
-        useState<Result | null>(null);
-
-
-
-    const [loading,setLoading] =
-        useState(false);
+    const [error, setError] = useState("");
 
 
 
 
-    const analyze = async()=>{
+
+    async function analyzeLocation() {
 
 
-        try{
+        if (!location) {
+
+            setError(
+                "Please enter a location"
+            );
+
+            return;
+
+        }
+
+
+
+        try {
 
 
             setLoading(true);
 
+            setError("");
 
 
-            const response =
-                await axios.get(
 
-                    `http://127.0.0.1:8000/analyze/${city}`
+            const response = await fetch(
 
+                `http://127.0.0.1:8000/analyze/${location}`
+
+            );
+
+
+
+            if (!response.ok) {
+
+
+                throw new Error(
+                    "Risk analysis failed"
                 );
 
+            }
 
 
-            setResult(
-                response.data
+
+            const data = await response.json();
+
+
+
+            setResult(data);
+
+
+
+        } catch (err) {
+
+
+            setError(
+
+                err instanceof Error
+
+                    ? err.message
+
+                    : "Unknown error"
+
             );
 
 
-        }
-
-
-        catch(error){
-
-
-            console.error(error);
-
-
-            alert(
-                "Unable to analyze location"
-            );
-
-
-        }
-
-
-        finally{
+        } finally {
 
 
             setLoading(false);
 
+        }
+
+    }
+
+
+
+
+
+    function getRiskColor(
+
+        level: string
+
+    ) {
+
+
+        if (level === "HIGH") {
+
+            return "red";
 
         }
 
 
-    };
+        if (level === "MEDIUM") {
+
+            return "orange";
+
+        }
+
+
+        return "green";
+
+    }
+
 
 
 
 
     return (
 
-        <div className="bg-white rounded-xl shadow p-6 mt-10">
+        <div className="p-6 space-y-6">
 
 
-            <h2 className="text-2xl font-bold mb-5">
+            <h2 className="text-2xl font-bold">
 
-                🌍 Location Risk Analysis
+                SentinelAI Risk Analyzer
 
             </h2>
 
@@ -115,15 +189,17 @@ function LocationAnalyzer(){
 
                 <input
 
-                    className="border rounded-lg p-3 flex-1"
+                    type="text"
 
-                    placeholder="Enter city name"
+                    placeholder="Enter location e.g. Nairobi"
 
-                    value={city}
+                    value={location}
 
-                    onChange={
-                        e=>setCity(e.target.value)
+                    onChange={(e) =>
+                        setLocation(e.target.value)
                     }
+
+                    className="border rounded px-4 py-2 w-72"
 
                 />
 
@@ -131,22 +207,16 @@ function LocationAnalyzer(){
 
                 <button
 
-                    onClick={analyze}
+                    onClick={analyzeLocation}
 
-                    className="bg-blue-600 text-white px-6 rounded-lg"
+                    className="bg-blue-600 text-white px-5 py-2 rounded"
 
                 >
 
-                    {
-                        loading
-                        ?
-                        "Analyzing..."
-                        :
-                        "Analyze"
-                    }
-
+                    Analyze
 
                 </button>
+
 
 
             </div>
@@ -154,108 +224,289 @@ function LocationAnalyzer(){
 
 
 
-            {
-                result &&
 
+            {loading && (
 
-                <div className="mt-8 border rounded-xl p-5">
+                <p>
 
+                    Analyzing environmental risk...
 
-                    <h3 className="text-xl font-bold">
+                </p>
 
-                        {result.location}
-
-                    </h3>
-
-
-
-
-                    <p className="mt-3">
-
-                        Weather:
-
-                        {" "}
-
-                        {result.weather.temperature}°C
-
-                    </p>
-
-
-
-                    <p>
-
-                        Humidity:
-
-                        {" "}
-
-                        {result.weather.humidity}%
-
-                    </p>
+            )}
 
 
 
 
-                    <p className="mt-4 text-3xl font-bold">
-
-                        {result.risk_level}
-
-                    </p>
 
 
+            {error && (
 
-                    <p>
+                <p className="text-red-600">
 
-                        Confidence:
+                    {error}
 
-                        {" "}
+                </p>
 
-                        {result.confidence}%
-
-                    </p>
+            )}
 
 
 
 
-                    <h4 className="font-semibold mt-5">
-
-                        Main Risk Drivers
-
-                    </h4>
 
 
 
-                    <ul className="list-disc ml-6">
+            {result && (
 
-                        {
-                            result.risk_drivers.map(
+                <div className="border rounded-xl p-6 space-y-5 shadow">
 
-                                (driver,index)=>(
 
-                                    <li key={index}>
+                    <div>
 
-                                        {driver}
 
-                                    </li>
+                        <h3 className="text-xl font-semibold">
 
-                                )
+                            {result.location}
 
-                            )
-                        }
+                        </h3>
 
-                    </ul>
+
+                        <p>
+
+                            Risk Classification:
+
+                            <span
+
+                                style={{
+
+                                    color: getRiskColor(
+
+                                        result.risk_level
+
+                                    ),
+
+                                    fontWeight: "bold",
+
+                                    marginLeft: "8px"
+
+                                }}
+
+                            >
+
+                                {result.risk_level}
+
+                            </span>
+
+                        </p>
+
+
+                    </div>
+
+
+
+
+
+
+                    <div className="grid grid-cols-2 gap-5">
+
+
+
+                        <div className="border rounded p-4">
+
+
+                            <h4 className="font-semibold">
+
+                                Risk Score
+
+                            </h4>
+
+
+                            <p className="text-3xl font-bold">
+
+                                {result.risk_score}
+
+                                /100
+
+                            </p>
+
+
+                        </div>
+
+
+
+
+
+                        <div className="border rounded p-4">
+
+
+                            <h4 className="font-semibold">
+
+                                Model Confidence
+
+                            </h4>
+
+
+                            <p className="text-3xl font-bold">
+
+                                {result.confidence}%
+
+                            </p>
+
+
+                        </div>
+
+
+
+                    </div>
+
+
+
+
+
+
+
+
+                    {result.environment && (
+
+                        <div className="border rounded p-4">
+
+
+                            <h4 className="font-semibold mb-3">
+
+                                Environmental Indicators
+
+                            </h4>
+
+
+
+                            <p>
+
+                                NDVI:
+
+                                {" "}
+
+                                {result.environment.ndvi}
+
+                            </p>
+
+
+
+                            <p>
+
+                                Rainfall Anomaly:
+
+                                {" "}
+
+                                {result.environment.rainfall_anomaly}
+
+                            </p>
+
+
+
+                        </div>
+
+                    )}
+
+
+
+
+
+
+
+
+
+                    {result.features && (
+
+                        <div className="border rounded p-4">
+
+
+                            <h4 className="font-semibold mb-3">
+
+                                Risk Drivers
+
+                            </h4>
+
+
+
+                            <ul className="space-y-1">
+
+
+                                <li>
+
+                                    Temperature:
+
+                                    {" "}
+
+                                    {result.features.temperature}°C
+
+                                </li>
+
+
+                                <li>
+
+                                    Rainfall:
+
+                                    {" "}
+
+                                    {result.features.rainfall}
+
+                                </li>
+
+
+
+                                <li>
+
+                                    Vegetation Health (NDVI):
+
+                                    {" "}
+
+                                    {result.features.ndvi}
+
+                                </li>
+
+
+
+                                <li>
+
+                                    Rainfall Stress:
+
+                                    {" "}
+
+                                    {result.features.rainfall_anomaly}
+
+                                </li>
+
+
+
+                                <li>
+
+                                    Poverty Rate:
+
+                                    {" "}
+
+                                    {result.features.poverty_rate}%
+
+                                </li>
+
+
+
+                            </ul>
+
+
+                        </div>
+
+                    )}
 
 
 
                 </div>
 
-            }
+            )}
+
 
 
         </div>
 
-    )
+    );
 
 }
-
-
-export default LocationAnalyzer;
