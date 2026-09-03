@@ -19,6 +19,11 @@ from backend.alerts.alert_store import (
 )
 
 
+from backend.services.history import (
+    save_prediction_history
+)
+
+
 
 # Project root
 
@@ -26,7 +31,7 @@ BASE_DIR = Path(__file__).resolve().parents[2]
 
 
 
-# Model path
+# ML model path
 
 MODEL_PATH = (
 
@@ -42,7 +47,7 @@ MODEL_PATH = (
 
 
 
-# Load ML model
+# Load model
 
 model = joblib.load(
     MODEL_PATH
@@ -50,7 +55,7 @@ model = joblib.load(
 
 
 
-# Risk mapping
+# Risk labels
 
 RISK_LABELS = {
 
@@ -65,32 +70,20 @@ RISK_LABELS = {
 
 
 
+
 def predict_risk(
     features: dict,
     db
 ):
 
     """
-    Predict community risk level.
-
-    Parameters:
-        features:
-            ML input features
-
-        db:
-            SQLAlchemy database session
-
-    Returns:
-        Prediction result with:
-        - risk level
-        - confidence
-        - SHAP drivers
-        - generated alert
+    Generate risk prediction,
+    explanation, alert, and save history.
     """
 
 
 
-    # Convert input into dataframe
+    # Convert input to dataframe
 
     dataframe = pd.DataFrame(
         [features]
@@ -98,7 +91,7 @@ def predict_risk(
 
 
 
-    # Prediction
+    # Model prediction
 
     prediction = model.predict(
         dataframe
@@ -106,11 +99,12 @@ def predict_risk(
 
 
 
-    # Confidence score
+    # Prediction confidence
 
     probabilities = model.predict_proba(
         dataframe
     )[0]
+
 
 
     confidence = round(
@@ -125,7 +119,7 @@ def predict_risk(
 
 
 
-    # Explainable AI
+    # SHAP explanation
 
     explanation = explain_prediction(
         features
@@ -133,7 +127,7 @@ def predict_risk(
 
 
 
-    # Top three contributing factors
+    # Select top risk drivers
 
     drivers = [
 
@@ -145,7 +139,7 @@ def predict_risk(
 
 
 
-    # Main response
+    # Prediction result
 
     result = {
 
@@ -190,7 +184,7 @@ def predict_risk(
 
 
 
-    # Save alert permanently
+    # Save alert in database
 
     saved_alert = save_alert(
 
@@ -202,7 +196,21 @@ def predict_risk(
 
 
 
-    # Add alert information
+    # Save prediction history
+
+    save_prediction_history(
+
+        db,
+
+        features,
+
+        result
+
+    )
+
+
+
+    # Attach alert details
 
     result["alert"] = {
 

@@ -17,6 +17,11 @@ from backend.alerts.alert_store import (
 )
 
 
+from backend.services.history import (
+    get_prediction_history
+)
+
+
 from backend.database.connection import (
     get_db
 )
@@ -111,6 +116,93 @@ def read_alerts(
 
 
             for alert in alerts
+
+
+        ]
+
+    }
+
+
+
+
+
+@router.get("/history")
+
+def history(
+
+    db: Session = Depends(get_db)
+
+):
+
+
+    records = get_prediction_history(
+        db
+    )
+
+
+
+    return {
+
+
+        "history":[
+
+
+            {
+
+
+                "id":
+
+                item.id,
+
+
+                "risk_level":
+
+                item.risk_level,
+
+
+                "confidence":
+
+                item.confidence,
+
+
+                "rainfall":
+
+                item.rainfall,
+
+
+                "temperature":
+
+                item.temperature,
+
+
+                "humidity":
+
+                item.humidity,
+
+
+                "population":
+
+                item.population,
+
+
+                "density":
+
+                item.density,
+
+
+                "poverty_rate":
+
+                item.poverty_rate,
+
+
+                "timestamp":
+
+                item.timestamp
+
+            }
+
+
+            for item in records
 
 
         ]
