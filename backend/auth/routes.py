@@ -1,4 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+
+from sqlalchemy.orm import Session
+
+
+from backend.database.database import get_db
+
+from backend.database.models import User
 
 
 from backend.auth.models import (
@@ -15,6 +22,8 @@ from backend.auth.security import (
 
 
 
+
+
 router = APIRouter(
 
     prefix="/auth",
@@ -26,61 +35,92 @@ router = APIRouter(
 
 
 
-users = {}
 
 
 
-
+# =====================================
+# Register User
+# =====================================
 
 @router.post("/register")
-
 def register(
 
-    user: UserCreate
+    user: UserCreate,
+
+    db: Session = Depends(get_db)
 
 ):
 
 
-    if user.username in users:
+    existing_user = db.query(User).filter(
+
+        User.username == user.username
+
+    ).first()
+
+
+
+    if existing_user:
+
 
         raise HTTPException(
 
             status_code=400,
 
-            detail="User already exists"
+            detail="Username already exists"
 
         )
 
 
 
-    users[user.username] = {
 
 
-        "username": user.username,
+    new_user = User(
 
+        username=user.username,
 
-        "password":
-
-        hash_password(
+        password=hash_password(
 
             user.password
 
         ),
 
+        role=user.role
 
-        "role":
+    )
 
-        user.role
 
-    }
+
+
+
+    db.add(new_user)
+
+    db.commit()
+
+    db.refresh(new_user)
+
+
 
 
 
     return {
 
+
         "message":
 
-        "User created"
+        "User created successfully",
+
+
+
+        "username":
+
+        new_user.username,
+
+
+
+        "role":
+
+        new_user.role
 
     }
 
@@ -88,68 +128,98 @@ def register(
 
 
 
-@router.post("/login")
 
+
+
+# =====================================
+# Login User
+# =====================================
+
+@router.post("/login")
 def login(
 
-    user: UserLogin
+    user: UserLogin,
+
+    db: Session = Depends(get_db)
 
 ):
 
 
-    stored_user = users.get(
+    database_user = db.query(User).filter(
 
-        user.username
+        User.username == user.username
+
+    ).first()
+
+
+
+
+    if database_user is None:
+
+
+        raise HTTPException(
+
+            status_code=401,
+
+            detail="Invalid username or password"
+
+        )
+
+
+
+
+
+
+    password_valid = verify_password(
+
+        user.password,
+
+        database_user.password
 
     )
 
 
-    if not stored_user:
+
+
+
+    if not password_valid:
 
 
         raise HTTPException(
 
             status_code=401,
 
-            detail="Invalid credentials"
+            detail="Invalid username or password"
 
         )
 
 
 
 
-    if not verify_password(
-
-        user.password,
-
-        stored_user["password"]
-
-    ):
-
-
-        raise HTTPException(
-
-            status_code=401,
-
-            detail="Invalid credentials"
-
-        )
 
 
 
+    token = create_access_token(
 
-    token = create_access_token({
-
-        "sub":
-
-        user.username,
+        {
 
 
-        "role":
+            "sub":
 
-        stored_user["role"]
+            database_user.username,
 
-    })
+
+
+            "role":
+
+            database_user.role
+
+        }
+
+    )
+
+
+
 
 
 
@@ -161,8 +231,26 @@ def login(
         token,
 
 
+
         "token_type":
 
-        "bearer"
+        "bearer",
+
+
+
+        "user": {
+
+
+            "username":
+
+            database_user.username,
+
+
+
+            "role":
+
+            database_user.role
+
+        }
 
     }
