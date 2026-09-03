@@ -1,0 +1,73 @@
+version: "3.9"
+
+
+services:
+
+
+  backend:
+
+    build: .
+
+    ports:
+
+      - "8000:8000"
+
+
+    env_file:
+
+      - .env
+
+
+
+    depends_on:
+
+      - database
+
+
+
+
+
+  database:
+
+
+    image: postgres:16
+
+
+
+    environment:
+
+
+      POSTGRES_DB:
+
+        sentinelai
+
+
+      POSTGRES_USER:
+
+        sentinel
+
+
+      POSTGRES_PASSWORD:
+
+        sentinelpassword
+
+
+
+    ports:
+
+      - "5432:5432"
+
+
+    volumes:
+
+
+      - postgres_data:/var/lib/postgresql/data
+
+
+
+
+
+volumes:
+
+
+  postgres_data:

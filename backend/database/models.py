@@ -7,7 +7,6 @@ from sqlalchemy import (
     Boolean
 )
 
-
 from datetime import datetime
 
 
@@ -18,13 +17,12 @@ from backend.database.database import Base
 
 
 # =====================================
-# Users Table
+# Users
 # =====================================
 
 class User(Base):
 
     __tablename__ = "users"
-
 
 
     id = Column(
@@ -36,7 +34,6 @@ class User(Base):
         index=True
 
     )
-
 
 
     username = Column(
@@ -52,7 +49,6 @@ class User(Base):
     )
 
 
-
     password = Column(
 
         String,
@@ -60,7 +56,6 @@ class User(Base):
         nullable=False
 
     )
-
 
 
     role = Column(
@@ -72,7 +67,6 @@ class User(Base):
     )
 
 
-
     created_at = Column(
 
         DateTime,
@@ -88,13 +82,12 @@ class User(Base):
 
 
 # =====================================
-# Risk Prediction History Table
+# GIS Location Risk Table
 # =====================================
 
-class RiskPrediction(Base):
+class LocationRisk(Base):
 
-    __tablename__ = "risk_predictions"
-
+    __tablename__ = "location_risks"
 
 
     id = Column(
@@ -108,7 +101,6 @@ class RiskPrediction(Base):
     )
 
 
-
     location = Column(
 
         String,
@@ -117,6 +109,23 @@ class RiskPrediction(Base):
 
     )
 
+
+    latitude = Column(
+
+        Float,
+
+        nullable=False
+
+    )
+
+
+    longitude = Column(
+
+        Float,
+
+        nullable=False
+
+    )
 
 
     risk_level = Column(
@@ -128,7 +137,6 @@ class RiskPrediction(Base):
     )
 
 
-
     risk_score = Column(
 
         Float,
@@ -138,68 +146,7 @@ class RiskPrediction(Base):
     )
 
 
-
-    confidence = Column(
-
-        Float,
-
-        nullable=True
-
-    )
-
-
-
-    temperature = Column(
-
-        Float,
-
-        nullable=True
-
-    )
-
-
-
-    rainfall = Column(
-
-        Float,
-
-        nullable=True
-
-    )
-
-
-
-    humidity = Column(
-
-        Float,
-
-        nullable=True
-
-    )
-
-
-
-    ndvi = Column(
-
-        Float,
-
-        nullable=True
-
-    )
-
-
-
-    rainfall_anomaly = Column(
-
-        Float,
-
-        nullable=True
-
-    )
-
-
-
-    created_at = Column(
+    updated_at = Column(
 
         DateTime,
 
@@ -213,14 +160,14 @@ class RiskPrediction(Base):
 
 
 
+
 # =====================================
-# Alerts Table
+# Risk Prediction History
 # =====================================
 
-class Alert(Base):
+class RiskPrediction(Base):
 
-    __tablename__ = "alerts"
-
+    __tablename__ = "risk_predictions"
 
 
     id = Column(
@@ -232,7 +179,6 @@ class Alert(Base):
         index=True
 
     )
-
 
 
     location = Column(
@@ -244,25 +190,13 @@ class Alert(Base):
     )
 
 
-
-    previous_risk = Column(
-
-        String,
-
-        nullable=True
-
-    )
-
-
-
-    current_risk = Column(
+    risk_level = Column(
 
         String,
 
         nullable=False
 
     )
-
 
 
     risk_score = Column(
@@ -274,6 +208,157 @@ class Alert(Base):
     )
 
 
+    confidence = Column(
+
+        Float,
+
+        nullable=True
+
+    )
+
+
+    temperature = Column(
+
+        Float,
+
+        nullable=True
+
+    )
+
+
+    rainfall = Column(
+
+        Float,
+
+        nullable=True
+
+    )
+
+
+    humidity = Column(
+
+        Float,
+
+        nullable=True
+
+    )
+
+
+    population = Column(
+
+        Float,
+
+        nullable=True
+
+    )
+
+
+    density = Column(
+
+        Float,
+
+        nullable=True
+
+    )
+
+
+    poverty_rate = Column(
+
+        Float,
+
+        nullable=True
+
+    )
+
+
+    ndvi = Column(
+
+        Float,
+
+        nullable=True
+
+    )
+
+
+    rainfall_anomaly = Column(
+
+        Float,
+
+        nullable=True
+
+    )
+
+
+    created_at = Column(
+
+        DateTime,
+
+        default=datetime.utcnow
+
+    )
+
+
+
+
+
+
+
+
+# =====================================
+# Alerts
+# =====================================
+
+class Alert(Base):
+
+    __tablename__ = "alerts"
+
+
+    id = Column(
+
+        Integer,
+
+        primary_key=True,
+
+        index=True
+
+    )
+
+
+    location = Column(
+
+        String,
+
+        nullable=False
+
+    )
+
+
+    previous_risk = Column(
+
+        String,
+
+        nullable=True
+
+    )
+
+
+    current_risk = Column(
+
+        String,
+
+        nullable=False
+
+    )
+
+
+    risk_score = Column(
+
+        Float,
+
+        nullable=False
+
+    )
+
 
     message = Column(
 
@@ -284,7 +369,6 @@ class Alert(Base):
     )
 
 
-
     resolved = Column(
 
         Boolean,
@@ -292,7 +376,6 @@ class Alert(Base):
         default=False
 
     )
-
 
 
     created_at = Column(
@@ -310,13 +393,12 @@ class Alert(Base):
 
 
 # =====================================
-# Notification History Table
+# Notifications
 # =====================================
 
 class Notification(Base):
 
     __tablename__ = "notifications"
-
 
 
     id = Column(
@@ -330,7 +412,6 @@ class Notification(Base):
     )
 
 
-
     user = Column(
 
         String,
@@ -338,7 +419,6 @@ class Notification(Base):
         nullable=True
 
     )
-
 
 
     notification_type = Column(
@@ -350,7 +430,6 @@ class Notification(Base):
     )
 
 
-
     message = Column(
 
         String,
@@ -360,7 +439,6 @@ class Notification(Base):
     )
 
 
-
     sent = Column(
 
         Boolean,
@@ -368,7 +446,6 @@ class Notification(Base):
         default=False
 
     )
-
 
 
     created_at = Column(

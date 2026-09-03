@@ -1,19 +1,30 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
-from jose import jwt
 
 from passlib.context import CryptContext
 
 
-
-SECRET_KEY = "sentinelai-secret-key-change"
-
-ALGORITHM = "HS256"
+from jose import JWTError, jwt
 
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+
+from backend.config import (
+
+    SECRET_KEY,
+
+    ALGORITHM,
+
+    ACCESS_TOKEN_EXPIRE_MINUTES
+
+)
 
 
+
+
+
+# =====================================
+# Password Hashing Configuration
+# =====================================
 
 pwd_context = CryptContext(
 
@@ -27,7 +38,11 @@ pwd_context = CryptContext(
 
 
 
-def hash_password(password):
+# =====================================
+# Hash Password
+# =====================================
+
+def hash_password(password: str):
 
     return pwd_context.hash(
 
@@ -39,13 +54,20 @@ def hash_password(password):
 
 
 
+
+
+# =====================================
+# Verify Password
+# =====================================
+
 def verify_password(
 
-    plain_password,
+    plain_password: str,
 
-    hashed_password
+    hashed_password: str
 
 ):
+
 
     return pwd_context.verify(
 
@@ -59,36 +81,131 @@ def verify_password(
 
 
 
+
+
+
+# =====================================
+# Create JWT Token
+# =====================================
+
 def create_access_token(
 
-    data,
+    data: dict,
+
+    expires_delta: timedelta | None = None
 
 ):
 
 
-    expire = datetime.utcnow() + timedelta(
+    to_encode = data.copy()
 
-        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+
+
+    if expires_delta:
+
+
+        expire = datetime.now(
+
+            timezone.utc
+
+        ) + expires_delta
+
+
+
+    else:
+
+
+        expire = datetime.now(
+
+            timezone.utc
+
+        ) + timedelta(
+
+            minutes=
+
+            ACCESS_TOKEN_EXPIRE_MINUTES
+
+        )
+
+
+
+
+
+
+    to_encode.update(
+
+        {
+
+            "exp":
+
+            expire
+
+        }
 
     )
 
 
-    token_data = data.copy()
 
 
-    token_data.update({
 
-        "exp": expire
+    encoded_jwt = jwt.encode(
 
-    })
-
-
-    return jwt.encode(
-
-        token_data,
+        to_encode,
 
         SECRET_KEY,
 
         algorithm=ALGORITHM
 
     )
+
+
+
+
+
+    return encoded_jwt
+
+
+
+
+
+
+
+# =====================================
+# Decode JWT Token
+# =====================================
+
+def decode_access_token(
+
+    token: str
+
+):
+
+
+    try:
+
+
+        payload = jwt.decode(
+
+            token,
+
+            SECRET_KEY,
+
+            algorithms=[
+
+                ALGORITHM
+
+            ]
+
+        )
+
+
+
+        return payload
+
+
+
+
+    except JWTError:
+
+
+        return None
