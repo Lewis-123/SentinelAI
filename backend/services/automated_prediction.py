@@ -5,12 +5,17 @@ from backend.services.prediction import predict_risk
 from backend.services.location import save_location_risk
 
 
+from machine_learning.data_pipeline.environmental import (
+    get_environmental_data
+)
+
 
 
 CITY_COORDINATES = {
 
 
     "Nairobi":
+
     {
 
         "latitude":-1.286389,
@@ -21,6 +26,7 @@ CITY_COORDINATES = {
 
 
     "Turkana":
+
     {
 
         "latitude":3.1167,
@@ -31,6 +37,7 @@ CITY_COORDINATES = {
 
 
     "Mombasa":
+
     {
 
         "latitude":-4.0435,
@@ -53,8 +60,36 @@ def predict_location_risk(
 ):
 
 
-    weather = get_weather(
+    coordinates = CITY_COORDINATES.get(
+
         city
+
+    )
+
+
+
+    if not coordinates:
+
+        raise Exception(
+            "Location coordinates unavailable"
+        )
+
+
+
+    weather = get_weather(
+
+        city
+
+    )
+
+
+
+    environmental = get_environmental_data(
+
+        coordinates["latitude"],
+
+        coordinates["longitude"]
+
     )
 
 
@@ -74,6 +109,7 @@ def predict_location_risk(
 
 
 
+
     features = {
 
 
@@ -81,23 +117,44 @@ def predict_location_risk(
 
 
         "temperature":
+
         weather["temperature"],
 
 
+
         "humidity":
+
         weather["humidity"],
 
 
+
         "population":
+
         vulnerability["population"],
 
 
+
         "density":
+
         vulnerability["density"],
 
 
+
         "poverty_rate":
-        vulnerability["poverty_rate"]
+
+        vulnerability["poverty_rate"],
+
+
+
+        "ndvi":
+
+        environmental["ndvi"],
+
+
+
+        "rainfall_anomaly":
+
+        environmental["rainfall_anomaly"]
 
     }
 
@@ -108,22 +165,6 @@ def predict_location_risk(
         features,
 
         db
-
-    )
-
-
-
-    coordinates = CITY_COORDINATES.get(
-
-        city,
-
-        {
-
-        "latitude":0,
-
-        "longitude":0
-
-        }
 
     )
 
@@ -149,6 +190,10 @@ def predict_location_risk(
 
 
     prediction["weather"] = weather
+
+
+    prediction["environment"] = environmental
+
 
 
     return prediction
