@@ -1,6 +1,9 @@
 from fastapi import APIRouter
 
-from backend.services.prediction import predict_risk
+from backend.services.prediction import (
+    predict_risk
+)
+
 
 
 router = APIRouter()
@@ -8,6 +11,7 @@ router = APIRouter()
 
 
 @router.post("/predict")
+
 def predict(data: dict):
 
 
@@ -16,18 +20,4 @@ def predict(data: dict):
     )
 
 
-    risk_names = {
-        0:"LOW",
-        1:"MEDIUM",
-        2:"HIGH"
-    }
-
-
-    return {
-
-        "risk_score": int(result),
-
-        "risk_level":
-        risk_names[result]
-
-    }
+    return result

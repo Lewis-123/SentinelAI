@@ -1,13 +1,18 @@
 import joblib
 import pandas as pd
+
 from pathlib import Path
 
 
-# Find project root
+from machine_learning.explainability.explainer import (
+    explain_prediction
+)
+
+
+
 BASE_DIR = Path(__file__).resolve().parents[2]
 
 
-# Model location
 MODEL_PATH = (
     BASE_DIR
     / "machine_learning"
@@ -16,21 +21,100 @@ MODEL_PATH = (
 )
 
 
-# Load trained model
-model = joblib.load(MODEL_PATH)
+
+model = joblib.load(
+    MODEL_PATH
+)
+
+
+
+RISK_LABELS = {
+
+    0: "LOW",
+
+    1: "MEDIUM",
+
+    2: "HIGH"
+
+}
 
 
 
 def predict_risk(features):
 
-    data = pd.DataFrame(
+
+    dataframe = pd.DataFrame(
         [features]
     )
 
 
+
     prediction = model.predict(
-        data
+        dataframe
+    )[0]
+
+
+
+    # Probability/confidence
+
+    probabilities = model.predict_proba(
+        dataframe
+    )[0]
+
+
+
+    confidence = round(
+
+        float(
+            max(probabilities)
+        ) * 100,
+
+        2
+
     )
 
 
-    return prediction[0]
+
+    explanation = explain_prediction(
+        features
+    )
+
+
+
+    drivers = [
+
+        item[0]
+
+        for item in explanation[:3]
+
+    ]
+
+
+
+    return {
+
+
+        "risk_score": int(prediction),
+
+
+        "risk_level":
+
+        RISK_LABELS.get(
+
+            int(prediction),
+
+            "UNKNOWN"
+
+        ),
+
+
+        "confidence":
+
+        confidence,
+
+
+        "risk_drivers":
+
+        drivers
+
+    }
