@@ -1,75 +1,93 @@
-import { useState } from "react";
+import {
+    useState
+} from "react";
 
 
 
-interface RiskResult {
-
-    location: string;
-
-    risk_level: string;
-
-    risk_score: number;
-
-    confidence: number;
-
-    model_prediction?: string;
 
 
-    environment?: {
-
-        ndvi: number;
-
-        rainfall_anomaly: number;
-
-    };
+interface PredictionResult {
 
 
-    features?: {
+    location:string;
 
-        temperature: number;
+    risk_level:string;
 
-        rainfall: number;
+    risk_score:number;
 
-        humidity: number;
+    confidence:number | null;
 
-        population: number;
 
-        density: number;
+    features?:{
 
-        poverty_rate: number;
+        temperature:number;
 
-        ndvi: number;
+        rainfall:number;
 
-        rainfall_anomaly: number;
+        humidity:number;
+
+        population:number;
+
+        density:number;
+
+        poverty_rate:number;
+
+        ndvi:number;
+
+        rainfall_anomaly:number;
 
     };
+
 
 }
 
 
 
-export default function LocationAnalyzer() {
 
 
-    const [location, setLocation] = useState("");
-
-    const [result, setResult] = useState<RiskResult | null>(null);
-
-    const [loading, setLoading] = useState(false);
-
-    const [error, setError] = useState("");
+export default function LocationAnalyzer(){
 
 
 
+    const [location,setLocation] =
+
+        useState("");
 
 
-    async function analyzeLocation() {
+
+    const [result,setResult] =
+
+        useState<PredictionResult | null>(null);
 
 
-        if (!location) {
+
+    const [loading,setLoading] =
+
+        useState(false);
+
+
+
+    const [error,setError] =
+
+        useState("");
+
+
+
+
+
+
+
+
+    async function analyzeLocation(){
+
+
+
+        if(!location){
 
             setError(
-                "Please enter a location"
+
+                "Enter a location"
+
             );
 
             return;
@@ -78,93 +96,129 @@ export default function LocationAnalyzer() {
 
 
 
-        try {
+
+        setLoading(true);
+
+        setError("");
 
 
-            setLoading(true);
 
-            setError("");
+
+
+        try{
+
+
+
+            const token =
+
+                localStorage.getItem(
+
+                    "token"
+
+                );
+
+
 
 
 
             const response = await fetch(
 
-                `http://127.0.0.1:8000/analyze/${location}`
+
+                `http://127.0.0.1:8000/analyze/${location}`,
+
+                {
+
+
+                    headers:{
+
+
+                        Authorization:
+
+                        `Bearer ${token}`
+
+
+                    }
+
+
+                }
+
 
             );
 
 
 
-            if (!response.ok) {
+
+
+
+            const data =
+
+                await response.json();
+
+
+
+
+
+
+
+            if(!response.ok){
 
 
                 throw new Error(
-                    "Risk analysis failed"
+
+                    data.detail ||
+
+                    "Prediction failed"
+
                 );
+
 
             }
 
 
 
-            const data = await response.json();
 
 
 
-            setResult(data);
+            setResult(
 
-
-
-        } catch (err) {
-
-
-            setError(
-
-                err instanceof Error
-
-                    ? err.message
-
-                    : "Unknown error"
+                data
 
             );
 
 
-        } finally {
+
+
+
+        }
+
+
+        catch(error:any){
+
+
+
+            setError(
+
+                error.message
+
+            );
+
+
+        }
+
+
+        finally{
 
 
             setLoading(false);
 
+
         }
+
 
     }
 
 
 
-
-
-    function getRiskColor(
-
-        level: string
-
-    ) {
-
-
-        if (level === "HIGH") {
-
-            return "red";
-
-        }
-
-
-        if (level === "MEDIUM") {
-
-            return "orange";
-
-        }
-
-
-        return "green";
-
-    }
 
 
 
@@ -172,14 +226,15 @@ export default function LocationAnalyzer() {
 
     return (
 
-        <div className="p-6 space-y-6">
+        <div className="space-y-6">
 
 
-            <h2 className="text-2xl font-bold">
+            <h2 className="text-xl font-bold">
 
-                SentinelAI Risk Analyzer
+                AI Risk Analyzer
 
             </h2>
+
 
 
 
@@ -189,31 +244,58 @@ export default function LocationAnalyzer() {
 
                 <input
 
-                    type="text"
 
-                    placeholder="Enter location e.g. Nairobi"
+                    className="border rounded p-3 flex-1"
+
+
+                    placeholder="Enter location e.g Nairobi"
+
 
                     value={location}
 
-                    onChange={(e) =>
-                        setLocation(e.target.value)
+
+                    onChange={e=>
+
+                        setLocation(
+
+                            e.target.value
+
+                        )
+
                     }
 
-                    className="border rounded px-4 py-2 w-72"
 
                 />
 
 
 
+
                 <button
+
 
                     onClick={analyzeLocation}
 
-                    className="bg-blue-600 text-white px-5 py-2 rounded"
+
+                    className="bg-blue-600 text-white px-5 rounded"
+
 
                 >
 
-                    Analyze
+
+                    {
+
+                    loading
+
+                    ?
+
+                    "Analyzing..."
+
+                    :
+
+                    "Analyze"
+
+                    }
+
 
                 </button>
 
@@ -225,28 +307,19 @@ export default function LocationAnalyzer() {
 
 
 
-            {loading && (
-
-                <p>
-
-                    Analyzing environmental risk...
-
-                </p>
-
-            )}
-
-
-
-
 
 
             {error && (
 
-                <p className="text-red-600">
+
+                <div className="text-red-600">
+
 
                     {error}
 
-                </p>
+
+                </div>
+
 
             )}
 
@@ -258,156 +331,101 @@ export default function LocationAnalyzer() {
 
             {result && (
 
-                <div className="border rounded-xl p-6 space-y-5 shadow">
 
 
-                    <div>
+                <div className="bg-gray-50 rounded-xl p-6 space-y-3">
 
 
-                        <h3 className="text-xl font-semibold">
+                    <h3 className="text-2xl font-bold">
 
-                            {result.location}
 
-                        </h3>
+                        {result.location}
 
 
-                        <p>
+                    </h3>
 
-                            Risk Classification:
 
-                            <span
 
-                                style={{
 
-                                    color: getRiskColor(
 
-                                        result.risk_level
+                    <p>
 
-                                    ),
 
-                                    fontWeight: "bold",
+                        Risk Level:
 
-                                    marginLeft: "8px"
 
-                                }}
+                        {" "}
 
-                            >
 
-                                {result.risk_level}
+                        <b>
 
-                            </span>
+                            {result.risk_level}
 
-                        </p>
+                        </b>
 
 
-                    </div>
+                    </p>
 
 
 
 
 
 
-                    <div className="grid grid-cols-2 gap-5">
+                    <p>
 
 
+                        Risk Score:
 
-                        <div className="border rounded p-4">
 
+                        {" "}
 
-                            <h4 className="font-semibold">
 
-                                Risk Score
+                        <b>
 
-                            </h4>
+                        {result.risk_score}/100
 
+                        </b>
 
-                            <p className="text-3xl font-bold">
 
-                                {result.risk_score}
+                    </p>
 
-                                /100
 
-                            </p>
 
 
-                        </div>
 
 
 
+                    <p>
 
 
-                        <div className="border rounded p-4">
+                        Confidence:
 
 
-                            <h4 className="font-semibold">
+                        {" "}
 
-                                Model Confidence
 
-                            </h4>
+                        <b>
 
 
-                            <p className="text-3xl font-bold">
+                        {
 
-                                {result.confidence}%
+                        result.confidence
 
-                            </p>
+                        ?
 
+                        `${result.confidence}%`
 
-                        </div>
+                        :
 
+                        "N/A"
 
+                        }
 
-                    </div>
 
+                        </b>
 
 
-
-
-
-
-
-                    {result.environment && (
-
-                        <div className="border rounded p-4">
-
-
-                            <h4 className="font-semibold mb-3">
-
-                                Environmental Indicators
-
-                            </h4>
-
-
-
-                            <p>
-
-                                NDVI:
-
-                                {" "}
-
-                                {result.environment.ndvi}
-
-                            </p>
-
-
-
-                            <p>
-
-                                Rainfall Anomaly:
-
-                                {" "}
-
-                                {result.environment.rainfall_anomaly}
-
-                            </p>
-
-
-
-                        </div>
-
-                    )}
-
-
+                    </p>
 
 
 
@@ -417,91 +435,97 @@ export default function LocationAnalyzer() {
 
                     {result.features && (
 
-                        <div className="border rounded p-4">
 
 
-                            <h4 className="font-semibold mb-3">
+                        <div className="mt-5">
 
-                                Risk Drivers
+
+                            <h4 className="font-bold">
+
+                                Environmental Indicators
 
                             </h4>
 
 
 
-                            <ul className="space-y-1">
+                            <p>
 
+                                Temperature:
 
-                                <li>
+                                {" "}
 
-                                    Temperature:
+                                {result.features.temperature}
 
-                                    {" "}
-
-                                    {result.features.temperature}°C
-
-                                </li>
-
-
-                                <li>
-
-                                    Rainfall:
-
-                                    {" "}
-
-                                    {result.features.rainfall}
-
-                                </li>
+                            </p>
 
 
 
-                                <li>
 
-                                    Vegetation Health (NDVI):
+                            <p>
 
-                                    {" "}
+                                Rainfall:
 
-                                    {result.features.ndvi}
+                                {" "}
 
-                                </li>
+                                {result.features.rainfall}
 
-
-
-                                <li>
-
-                                    Rainfall Stress:
-
-                                    {" "}
-
-                                    {result.features.rainfall_anomaly}
-
-                                </li>
+                            </p>
 
 
 
-                                <li>
 
-                                    Poverty Rate:
+                            <p>
 
-                                    {" "}
+                                Humidity:
 
-                                    {result.features.poverty_rate}%
+                                {" "}
 
-                                </li>
+                                {result.features.humidity}
+
+                            </p>
 
 
 
-                            </ul>
+
+                            <p>
+
+                                NDVI:
+
+                                {" "}
+
+                                {result.features.ndvi}
+
+                            </p>
+
+
+
+
+                            <p>
+
+                                Rainfall Anomaly:
+
+                                {" "}
+
+                                {result.features.rainfall_anomaly}
+
+                            </p>
+
 
 
                         </div>
+
 
                     )}
 
 
 
+
+
                 </div>
 
+
             )}
+
 
 
 

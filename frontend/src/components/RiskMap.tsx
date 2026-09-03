@@ -20,22 +20,19 @@ import L from "leaflet";
 
 interface RiskLocation {
 
+    location:string;
 
-    location: string;
+    latitude:number;
 
+    longitude:number;
 
-    latitude: number;
+    risk_level:string;
 
-
-    longitude: number;
-
-
-    risk_level: string;
-
-
-    risk_score: number;
+    risk_score:number;
 
 }
+
+
 
 
 
@@ -44,10 +41,8 @@ interface RiskLocation {
 export default function RiskMap(){
 
 
-
     const [locations,setLocations] =
         useState<RiskLocation[]>([]);
-
 
 
     const [loading,setLoading] =
@@ -61,16 +56,37 @@ export default function RiskMap(){
     useEffect(()=>{
 
 
-        async function fetchRiskMap(){
+        async function loadMap(){
 
 
             try{
 
 
-                const response =
-                    await fetch(
-                        "http://127.0.0.1:8000/risk-map"
+                const token =
+                    localStorage.getItem(
+                        "token"
                     );
+
+
+
+                const response = await fetch(
+
+                    "http://127.0.0.1:8000/risk-map",
+
+                    {
+
+                        headers:{
+
+                            Authorization:
+
+                            `Bearer ${token}`
+
+                        }
+
+                    }
+
+                );
+
 
 
                 const data =
@@ -79,27 +95,35 @@ export default function RiskMap(){
 
 
                 setLocations(
-                    data.locations
+
+                    data.locations || []
+
                 );
 
 
             }
+
 
             catch(error){
 
 
                 console.error(
-                    "Risk map error:",
+
+                    "Map error",
+
                     error
+
                 );
 
 
             }
 
+
             finally{
 
 
                 setLoading(false);
+
 
             }
 
@@ -108,7 +132,9 @@ export default function RiskMap(){
 
 
 
-        fetchRiskMap();
+
+
+        loadMap();
 
 
 
@@ -120,49 +146,53 @@ export default function RiskMap(){
 
 
 
-    function getColor(
-        risk:string
+    function markerIcon(
+        level:string
     ){
 
 
-        if(risk==="HIGH")
-            return "red";
+        const color =
+
+            level === "HIGH"
+
+            ? "red"
+
+            :
+
+            level === "MEDIUM"
+
+            ? "orange"
+
+            :
+
+            "green";
 
 
-        if(risk==="MEDIUM")
-            return "orange";
 
-
-        return "green";
-
-    }
-
-
-
-
-
-
-
-    function createIcon(
-        risk:string
-    ){
 
 
         return L.divIcon({
 
-            className:"risk-marker",
-
             html:
 
             `
+
             <div style="
-            background:${getColor(risk)};
+
+            background:${color};
+
             width:25px;
+
             height:25px;
+
             border-radius:50%;
+
             border:3px solid white;
+
             ">
+
             </div>
+
             `
 
         });
@@ -175,14 +205,15 @@ export default function RiskMap(){
 
 
 
-
     if(loading){
 
 
         return (
 
             <p>
-                Loading risk map...
+
+                Loading map...
+
             </p>
 
         );
@@ -194,11 +225,9 @@ export default function RiskMap(){
 
 
 
-
     return (
 
-
-        <div className="w-full h-[600px]">
+        <div>
 
 
             <h2 className="text-xl font-bold mb-4">
@@ -209,25 +238,25 @@ export default function RiskMap(){
 
 
 
-
-
             <MapContainer
 
-
                 center={[
-                    -1.2921,
-                    36.8219
-                ]}
 
+                    -1.2921,
+
+                    36.8219
+
+                ]}
 
                 zoom={6}
 
-
                 style={{
-                    height:"550px",
-                    width:"100%"
-                }}
 
+                    height:"550px",
+
+                    width:"100%"
+
+                }}
 
             >
 
@@ -235,13 +264,11 @@ export default function RiskMap(){
 
                 <TileLayer
 
-                    url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    url=
 
-                    attribution="© OpenStreetMap"
+                    "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 
                 />
-
-
 
 
 
@@ -249,51 +276,47 @@ export default function RiskMap(){
                 {
 
                 locations.map(
-                    (item)=>(
+
+                    item => (
 
 
-                    <Marker
+                        <Marker
 
-                        key={
-                            item.location
-                        }
+                            key={item.location}
 
+                            position={[
 
-                        position={[
+                                item.latitude,
 
-                            item.latitude,
+                                item.longitude
 
-                            item.longitude
+                            ]}
 
-                        ]}
+                            icon={
 
+                                markerIcon(
 
-                        icon={
+                                    item.risk_level
 
-                            createIcon(
-                                item.risk_level
-                            )
+                                )
 
-                        }
+                            }
 
-                    >
+                        >
 
 
-                        <Popup>
+                            <Popup>
 
 
-                            <div>
+                                <b>
+
+                                {item.location}
+
+                                </b>
 
 
-                                <h3 className="font-bold">
+                                <br/>
 
-                                    {item.location}
-
-                                </h3>
-
-
-
-                                <p>
 
                                 Risk:
 
@@ -301,11 +324,9 @@ export default function RiskMap(){
 
                                 {item.risk_level}
 
-                                </p>
 
+                                <br/>
 
-
-                                <p>
 
                                 Score:
 
@@ -313,18 +334,13 @@ export default function RiskMap(){
 
                                 {item.risk_score}/100
 
-                                </p>
+
+
+                            </Popup>
 
 
 
-                            </div>
-
-
-                        </Popup>
-
-
-
-                    </Marker>
+                        </Marker>
 
 
                     )
