@@ -1,5 +1,6 @@
 import RiskPrediction from "./RiskPrediction";
 import RiskAnalytics from "./RiskAnalytics";
+import RiskMap from "./RiskMap";
 
 
 function Dashboard(){
@@ -36,16 +37,12 @@ function Dashboard(){
         <div className="bg-white rounded-xl shadow p-6">
 
           <h2 className="font-semibold">
-
             Environmental Monitoring
-
           </h2>
 
 
-          <p className="text-3xl font-bold mt-3 text-green-600">
-
+          <p className="text-3xl font-bold text-green-600 mt-3">
             Active
-
           </p>
 
         </div>
@@ -56,16 +53,12 @@ function Dashboard(){
         <div className="bg-white rounded-xl shadow p-6">
 
           <h2 className="font-semibold">
-
             AI Engine
-
           </h2>
 
 
-          <p className="text-3xl font-bold mt-3 text-blue-600">
-
+          <p className="text-3xl font-bold text-blue-600 mt-3">
             Online
-
           </p>
 
         </div>
@@ -76,16 +69,12 @@ function Dashboard(){
         <div className="bg-white rounded-xl shadow p-6">
 
           <h2 className="font-semibold">
-
             Alerts
-
           </h2>
 
 
-          <p className="text-3xl font-bold mt-3 text-red-600">
-
+          <p className="text-3xl font-bold text-red-600 mt-3">
             0
-
           </p>
 
         </div>
@@ -97,6 +86,10 @@ function Dashboard(){
 
 
       <RiskAnalytics />
+
+
+
+      <RiskMap />
 
 
 
