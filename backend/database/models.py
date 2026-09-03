@@ -1,67 +1,17 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Float,
-    DateTime
-)
+from sqlalchemy import Column, Integer, String, Float, DateTime
 
 from datetime import datetime
 
 
-from backend.database.connection import Base
+from backend.database.database import Base
 
 
 
 
 
-class Alert(Base):
+class User(Base):
 
-
-    __tablename__ = "alerts"
-
-
-    id = Column(
-
-        Integer,
-
-        primary_key=True,
-
-        index=True
-
-    )
-
-
-    location = Column(String)
-
-
-    risk_level = Column(String)
-
-
-    severity = Column(String)
-
-
-    message = Column(String)
-
-
-    timestamp = Column(
-
-        DateTime,
-
-        default=datetime.utcnow
-
-    )
-
-
-
-
-
-
-class PredictionHistory(Base):
-
-
-    __tablename__ = "prediction_history"
-
+    __tablename__ = "users"
 
 
     id = Column(
@@ -75,63 +25,7 @@ class PredictionHistory(Base):
     )
 
 
-    risk_level = Column(String)
-
-
-    confidence = Column(Float)
-
-
-    rainfall = Column(Float)
-
-
-    temperature = Column(Float)
-
-
-    humidity = Column(Float)
-
-
-    population = Column(Integer)
-
-
-    density = Column(Float)
-
-
-    poverty_rate = Column(Float)
-
-
-    timestamp = Column(
-
-        DateTime,
-
-        default=datetime.utcnow
-
-    )
-
-
-
-
-
-
-
-class LocationRisk(Base):
-
-
-    __tablename__ = "location_risk"
-
-
-
-    id = Column(
-
-        Integer,
-
-        primary_key=True,
-
-        index=True
-
-    )
-
-
-    name = Column(
+    username = Column(
 
         String,
 
@@ -140,16 +34,43 @@ class LocationRisk(Base):
     )
 
 
-    latitude = Column(
+    password = Column(
 
-        Float
+        String
 
     )
 
 
-    longitude = Column(
+    role = Column(
 
-        Float
+        String,
+
+        default="community"
+
+    )
+
+
+
+
+
+
+class RiskPrediction(Base):
+
+    __tablename__ = "risk_predictions"
+
+
+    id = Column(
+
+        Integer,
+
+        primary_key=True
+
+    )
+
+
+    location = Column(
+
+        String
 
     )
 
@@ -161,6 +82,13 @@ class LocationRisk(Base):
     )
 
 
+    risk_score = Column(
+
+        Float
+
+    )
+
+
     confidence = Column(
 
         Float
@@ -168,7 +96,56 @@ class LocationRisk(Base):
     )
 
 
-    timestamp = Column(
+    created_at = Column(
+
+        DateTime,
+
+        default=datetime.utcnow
+
+    )
+
+
+
+
+
+
+
+class Alert(Base):
+
+    __tablename__ = "alerts"
+
+
+    id = Column(
+
+        Integer,
+
+        primary_key=True
+
+    )
+
+
+    location = Column(
+
+        String
+
+    )
+
+
+    message = Column(
+
+        String
+
+    )
+
+
+    risk_score = Column(
+
+        Float
+
+    )
+
+
+    created_at = Column(
 
         DateTime,
 
