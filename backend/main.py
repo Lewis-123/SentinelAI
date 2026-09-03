@@ -3,10 +3,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 
-
 from backend.api.routes import router as api_router
 
 from backend.auth.routes import router as auth_router
+
+
+from backend.monitoring.scheduler import start_scheduler
 
 
 
@@ -16,7 +18,10 @@ app = FastAPI(
 
     title="SentinelAI",
 
-    description="AI-powered environmental and social risk early warning system",
+    description=(
+        "AI-powered environmental and social "
+        "risk early warning system"
+    ),
 
     version="1.0.0"
 
@@ -26,9 +31,10 @@ app = FastAPI(
 
 
 
-# ==========================
+# ==================================
 # CORS Configuration
-# ==========================
+# ==================================
+
 
 app.add_middleware(
 
@@ -54,9 +60,9 @@ app.add_middleware(
 
 
 
-# ==========================
-# Register API Routes
-# ==========================
+# ==================================
+# Register API Routers
+# ==================================
 
 
 app.include_router(
@@ -66,8 +72,6 @@ app.include_router(
 )
 
 
-
-# Authentication routes
 
 app.include_router(
 
@@ -79,13 +83,32 @@ app.include_router(
 
 
 
-# ==========================
+# ==================================
+# Application Startup
+# ==================================
+
+
+@app.on_event("startup")
+def startup_event():
+
+    """
+    Start background monitoring system.
+
+    Runs scheduled risk checks.
+    """
+
+    start_scheduler()
+
+
+
+
+
+# ==================================
 # Root Endpoint
-# ==========================
+# ==================================
 
 
 @app.get("/")
-
 def home():
 
     return {
@@ -96,14 +119,16 @@ def home():
         "SentinelAI",
 
 
+
         "status":
 
         "running",
 
 
+
         "message":
 
-        "AI environmental risk platform operational"
+        "AI risk monitoring platform operational"
 
     }
 
@@ -111,13 +136,12 @@ def home():
 
 
 
-# ==========================
+# ==================================
 # Health Check
-# ==========================
+# ==================================
 
 
 @app.get("/health")
-
 def health_check():
 
     return {
@@ -125,7 +149,12 @@ def health_check():
 
         "status":
 
-        "healthy"
+        "healthy",
 
+
+
+        "service":
+
+        "SentinelAI API"
 
     }
