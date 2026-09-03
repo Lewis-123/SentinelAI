@@ -18,31 +18,6 @@ import L from "leaflet";
 
 
 
-// Fix Leaflet marker icons
-
-delete (
-    L.Icon.Default.prototype as any
-)._getIconUrl;
-
-
-
-L.Icon.Default.mergeOptions({
-
-    iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-
-
-    iconUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-
-
-    shadowUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png"
-
-});
-
-
-
 
 
 interface LocationRisk {
@@ -58,6 +33,72 @@ interface LocationRisk {
 
     confidence:number;
 
+
+}
+
+
+
+
+
+function createRiskIcon(risk:string){
+
+
+
+    let color = "green";
+
+
+
+    if(risk === "HIGH"){
+
+        color = "red";
+
+    }
+
+
+    else if(risk === "MEDIUM"){
+
+        color = "orange";
+
+    }
+
+
+
+
+    return L.divIcon({
+
+
+        className:"custom-marker",
+
+
+        html:
+
+
+        `
+
+        <div style="
+
+            background:${color};
+
+            width:25px;
+
+            height:25px;
+
+            border-radius:50%;
+
+            border:3px solid white;
+
+            box-shadow:0 0 8px rgba(0,0,0,0.5);
+
+        ">
+
+        </div>
+
+        `
+
+
+    });
+
+
 }
 
 
@@ -69,7 +110,9 @@ function RiskMap(){
 
 
     const [locations,setLocations] =
+
         useState<LocationRisk[]>([]);
+
 
 
 
@@ -93,6 +136,7 @@ function RiskMap(){
                 response.data.locations
 
             );
+
 
 
         }
@@ -119,11 +163,11 @@ function RiskMap(){
 
 
 
+
     useEffect(()=>{
 
 
         fetchLocations();
-
 
 
     },[]);
@@ -134,6 +178,7 @@ function RiskMap(){
 
 
     return (
+
 
 
         <div className="bg-white rounded-xl shadow p-6 mt-10">
@@ -174,6 +219,7 @@ function RiskMap(){
                 }}
 
 
+
             >
 
 
@@ -193,11 +239,13 @@ function RiskMap(){
 
 
 
+
                 {
 
                     locations.map(
 
                         (location,index)=>(
+
 
 
                             <Marker
@@ -218,6 +266,18 @@ function RiskMap(){
                                 ]}
 
 
+
+                                icon={
+
+                                    createRiskIcon(
+
+                                        location.risk
+
+                                    )
+
+                                }
+
+
                             >
 
 
@@ -229,7 +289,8 @@ function RiskMap(){
                                     <div>
 
 
-                                        <h3 className="font-bold">
+
+                                        <h3 className="font-bold text-lg">
 
                                             {location.name}
 
@@ -237,15 +298,22 @@ function RiskMap(){
 
 
 
+
                                         <p>
 
-                                            Risk:
+                                            Risk Level:
 
                                             {" "}
 
+                                            <strong>
+
                                             {location.risk}
 
+                                            </strong>
+
                                         </p>
+
+
 
 
 
@@ -260,7 +328,10 @@ function RiskMap(){
                                         </p>
 
 
+
+
                                     </div>
+
 
 
 
@@ -268,7 +339,9 @@ function RiskMap(){
 
 
 
+
                             </Marker>
+
 
 
                         )
@@ -280,16 +353,55 @@ function RiskMap(){
 
 
 
+
             </MapContainer>
+
+
+
+
+
+
+            {/* Map Legend */}
+
+
+            <div className="mt-5 flex gap-6">
+
+
+                <div>
+
+                    🔴 High Risk
+
+                </div>
+
+
+                <div>
+
+                    🟡 Medium Risk
+
+                </div>
+
+
+                <div>
+
+                    🟢 Low Risk
+
+                </div>
+
+
+
+            </div>
+
 
 
 
         </div>
 
 
+
     )
 
 }
+
 
 
 
