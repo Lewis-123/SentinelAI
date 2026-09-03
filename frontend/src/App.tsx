@@ -1,19 +1,33 @@
 import {
- BrowserRouter,
- Routes,
- Route
+
+    BrowserRouter,
+
+    Routes,
+
+    Route
+
 } from "react-router-dom";
 
 
+
 import {
- AuthProvider
+
+    AuthProvider
+
 } from "./auth/AuthContext";
 
+
+
+import ProtectedRoute from "./auth/ProtectedRoute";
 
 import Login from "./auth/Login";
 
 
-import ProtectedRoute from "./auth/ProtectedRoute";
+
+import Landing from "./pages/Landing";
+
+import Register from "./pages/Register";
+
 
 
 import Dashboard from "./components/Dashboard";
@@ -22,58 +36,83 @@ import Dashboard from "./components/Dashboard";
 
 
 
+
+
 export default function App(){
 
 
-return (
-
-<AuthProvider>
+    return (
 
 
-<BrowserRouter>
+        <AuthProvider>
 
 
-<Routes>
+            <BrowserRouter>
 
 
-<Route
-
-path="/login"
-
-element={<Login/>}
-
-/>
+                <Routes>
 
 
+                    <Route
 
-<Route
+                        path="/"
 
-path="/dashboard"
+                        element={<Landing/>}
 
-element={
-
-<ProtectedRoute>
-
-<Dashboard/>
-
-</ProtectedRoute>
-
-}
-
-/>
+                    />
 
 
 
-</Routes>
+
+                    <Route
+
+                        path="/login"
+
+                        element={<Login/>}
+
+                    />
 
 
-</BrowserRouter>
 
 
-</AuthProvider>
+                    <Route
+
+                        path="/register"
+
+                        element={<Register/>}
+
+                    />
 
 
-);
 
+
+
+                    <Route
+
+                        path="/dashboard"
+
+                        element={
+
+                            <ProtectedRoute>
+
+                                <Dashboard/>
+
+                            </ProtectedRoute>
+
+                        }
+
+                    />
+
+
+                </Routes>
+
+
+            </BrowserRouter>
+
+
+        </AuthProvider>
+
+
+    );
 
 }

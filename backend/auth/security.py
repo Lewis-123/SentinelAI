@@ -1,21 +1,14 @@
 from datetime import datetime, timedelta, timezone
 
-
-from passlib.context import CryptContext
-
+import bcrypt
 
 from jose import JWTError, jwt
 
 
-
 from backend.config import (
-
     SECRET_KEY,
-
     ALGORITHM,
-
     ACCESS_TOKEN_EXPIRE_MINUTES
-
 )
 
 
@@ -23,42 +16,42 @@ from backend.config import (
 
 
 # =====================================
-# Password Hashing Configuration
+# Password Hashing
 # =====================================
 
-pwd_context = CryptContext(
-
-    schemes=["bcrypt"],
-
-    deprecated="auto"
-
-)
-
-
-
-
-
-# =====================================
-# Hash Password
-# =====================================
 
 def hash_password(password: str):
 
-    return pwd_context.hash(
 
-        password
+    # bcrypt supports max 72 bytes
+
+    password_bytes = password.encode(
+
+        "utf-8"
+
+    )[:72]
+
+
+    salt = bcrypt.gensalt()
+
+
+
+    hashed = bcrypt.hashpw(
+
+        password_bytes,
+
+        salt
 
     )
 
 
+    return hashed.decode("utf-8")
 
 
 
 
 
-# =====================================
-# Verify Password
-# =====================================
+
 
 def verify_password(
 
@@ -69,11 +62,27 @@ def verify_password(
 ):
 
 
-    return pwd_context.verify(
+    password_bytes = plain_password.encode(
 
-        plain_password,
+        "utf-8"
 
-        hashed_password
+    )[:72]
+
+
+
+    hashed_bytes = hashed_password.encode(
+
+        "utf-8"
+
+    )
+
+
+
+    return bcrypt.checkpw(
+
+        password_bytes,
+
+        hashed_bytes
 
     )
 
@@ -85,8 +94,9 @@ def verify_password(
 
 
 # =====================================
-# Create JWT Token
+# JWT Creation
 # =====================================
+
 
 def create_access_token(
 
@@ -111,7 +121,6 @@ def create_access_token(
         ) + expires_delta
 
 
-
     else:
 
 
@@ -129,16 +138,11 @@ def create_access_token(
 
 
 
-
-
-
     to_encode.update(
 
         {
 
-            "exp":
-
-            expire
+            "exp": expire
 
         }
 
@@ -146,9 +150,7 @@ def create_access_token(
 
 
 
-
-
-    encoded_jwt = jwt.encode(
+    return jwt.encode(
 
         to_encode,
 
@@ -162,17 +164,13 @@ def create_access_token(
 
 
 
-    return encoded_jwt
-
-
-
-
 
 
 
 # =====================================
-# Decode JWT Token
+# JWT Decode
 # =====================================
+
 
 def decode_access_token(
 
@@ -184,25 +182,15 @@ def decode_access_token(
     try:
 
 
-        payload = jwt.decode(
+        return jwt.decode(
 
             token,
 
             SECRET_KEY,
 
-            algorithms=[
-
-                ALGORITHM
-
-            ]
+            algorithms=[ALGORITHM]
 
         )
-
-
-
-        return payload
-
-
 
 
     except JWTError:
