@@ -1,6 +1,7 @@
 from fastapi import (
     APIRouter,
-    Depends
+    Depends,
+    HTTPException
 )
 
 
@@ -9,6 +10,11 @@ from sqlalchemy.orm import Session
 
 from backend.services.prediction import (
     predict_risk
+)
+
+
+from backend.services.weather import (
+    get_weather
 )
 
 
@@ -33,27 +39,53 @@ router = APIRouter()
 
 
 
+
+@router.get("/weather/{city}")
+
+def weather(city:str):
+
+
+    try:
+
+
+        return get_weather(
+            city
+        )
+
+
+    except Exception as e:
+
+
+        raise HTTPException(
+
+            status_code=400,
+
+            detail=str(e)
+
+        )
+
+
+
+
+
 @router.post("/predict")
 
 def predict(
 
-    data: dict,
+    data:dict,
 
-    db: Session = Depends(get_db)
+    db:Session = Depends(get_db)
 
 ):
 
 
-    result = predict_risk(
+    return predict_risk(
 
         data,
 
         db
 
     )
-
-
-    return result
 
 
 
@@ -63,7 +95,7 @@ def predict(
 
 def read_alerts(
 
-    db: Session = Depends(get_db)
+    db:Session = Depends(get_db)
 
 ):
 
@@ -71,7 +103,6 @@ def read_alerts(
     alerts = get_alerts(
         db
     )
-
 
 
     return {
@@ -83,34 +114,17 @@ def read_alerts(
             {
 
 
-                "id":
+                "id":alert.id,
 
-                alert.id,
+                "location":alert.location,
 
+                "risk_level":alert.risk_level,
 
-                "location":
+                "severity":alert.severity,
 
-                alert.location,
+                "message":alert.message,
 
-
-                "risk_level":
-
-                alert.risk_level,
-
-
-                "severity":
-
-                alert.severity,
-
-
-                "message":
-
-                alert.message,
-
-
-                "timestamp":
-
-                alert.timestamp
+                "timestamp":alert.timestamp
 
             }
 
@@ -130,7 +144,7 @@ def read_alerts(
 
 def history(
 
-    db: Session = Depends(get_db)
+    db:Session = Depends(get_db)
 
 ):
 
@@ -138,7 +152,6 @@ def history(
     records = get_prediction_history(
         db
     )
-
 
 
     return {
@@ -150,54 +163,13 @@ def history(
             {
 
 
-                "id":
+                "id":item.id,
 
-                item.id,
+                "risk_level":item.risk_level,
 
+                "confidence":item.confidence,
 
-                "risk_level":
-
-                item.risk_level,
-
-
-                "confidence":
-
-                item.confidence,
-
-
-                "rainfall":
-
-                item.rainfall,
-
-
-                "temperature":
-
-                item.temperature,
-
-
-                "humidity":
-
-                item.humidity,
-
-
-                "population":
-
-                item.population,
-
-
-                "density":
-
-                item.density,
-
-
-                "poverty_rate":
-
-                item.poverty_rate,
-
-
-                "timestamp":
-
-                item.timestamp
+                "timestamp":item.timestamp
 
             }
 
