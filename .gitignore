@@ -1,0 +1,17 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Data
+data/raw/
+data/processed/
+
+# Environment
+.env
+
+# Models
+*.pkl
+
+# VS Code
+.vscode/
