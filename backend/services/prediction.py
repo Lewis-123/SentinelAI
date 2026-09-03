@@ -1,30 +1,34 @@
-from pathlib import Path
-
 import joblib
 
-import pandas as pd
+from pathlib import Path
 
 
-from backend.services.risk_score import (
-    calculate_risk_score,
-    classify_risk
-)
+from sqlalchemy.orm import Session
+
+
+from backend.database.models import RiskPrediction
 
 
 
-# ==========================
-# Load trained ML model
-# ==========================
-
-BASE_DIR = Path(__file__).resolve().parents[2]
 
 
 MODEL_PATH = (
-    BASE_DIR
+
+    Path(__file__)
+
+    .resolve()
+
+    .parent.parent.parent
+
     / "machine_learning"
+
     / "models"
+
     / "risk_classifier.pkl"
+
 )
+
+
 
 
 
@@ -36,204 +40,180 @@ model = joblib.load(
 
 
 
-print(
-    "Loaded model:",
-    MODEL_PATH
-)
-
-
-
-print(
-    "Model features:",
-    model.feature_names_in_
-)
 
 
 
 
+FEATURE_COLUMNS = [
 
-# ==========================
-# Prediction Function
-# ==========================
+    "temperature",
+
+    "rainfall",
+
+    "humidity",
+
+    "population",
+
+    "density",
+
+    "poverty_rate",
+
+    "ndvi",
+
+    "rainfall_anomaly"
+
+]
+
+
+
+
+
+
 
 def predict_risk(
 
     features: dict,
 
-    db=None
+    db: Session = None,
+
+    location: str = "Unknown"
 
 ):
 
+
     """
-    SentinelAI Risk Prediction Engine
-
-
-    Expected features:
-
-    temperature
-    rainfall
-    humidity
-    population
-    density
-    poverty_rate
-    ndvi
-    rainfall_anomaly
+    Run ML prediction and store result.
 
     """
 
 
 
-    # Convert dictionary into dataframe
-
-    dataframe = pd.DataFrame(
-
-        [features]
-
-    )
+    model_input = {
 
 
+        feature:
 
-    print(
-        "\nPREDICTION INPUT FEATURES"
-    )
+        features.get(
 
-    print(
-        dataframe.columns
-    )
+            feature,
 
-    print(
-        dataframe
-    )
+            0
+
+        )
+
+        for feature in FEATURE_COLUMNS
+
+    }
 
 
 
 
-    # Ensure feature order matches model
 
-    expected_features = list(
+    prediction = model.predict(
 
-        model.feature_names_in_
+        [
 
-    )
+            model_input
 
+        ]
 
-
-    missing_features = [
-
-        feature
-
-        for feature in expected_features
-
-        if feature not in dataframe.columns
-
-    ]
+    )[0]
 
 
 
-    if missing_features:
 
 
-        raise ValueError(
+    probability = None
 
-            f"Missing model features: {missing_features}. "
-            f"Received: {list(dataframe.columns)}"
+
+
+    if hasattr(
+
+        model,
+
+        "predict_proba"
+
+    ):
+
+
+        probability = max(
+
+            model.predict_proba(
+
+                [
+
+                    model_input
+
+                ]
+
+            )[0]
 
         )
 
 
 
 
-    dataframe = dataframe[
-
-        expected_features
-
-    ]
 
 
+    # Convert prediction
 
+    risk_levels = {
 
-    # Model prediction
+        0: "LOW",
 
-    prediction = model.predict(
+        1: "MEDIUM",
 
-        dataframe
+        2: "HIGH"
 
-    )[0]
+    }
 
 
 
 
-    # Probability
 
-    probabilities = model.predict_proba(
+    risk_level = risk_levels.get(
 
-        dataframe
+        prediction,
 
-    )[0]
-
-
-
-    confidence = max(
-
-        probabilities
+        str(prediction)
 
     )
 
 
 
 
-    # Convert prediction label
-
-    if hasattr(
-
-        model,
-
-        "classes_"
-
-    ):
 
 
-        model_prediction = model.classes_[
-
-            prediction
-
-        ]
+    risk_score = {
 
 
-    else:
+        "LOW": 30,
 
+        "MEDIUM": 60,
 
-        model_prediction = prediction
+        "HIGH": 85
 
+    }.get(
 
+        risk_level,
 
-
-
-    # Calculate continuous risk score
-
-    risk_score = calculate_risk_score(
-
-        features,
-
-        confidence * 100
+        50
 
     )
 
 
 
 
-    # Convert score into category
-
-    risk_level = classify_risk(
-
-        risk_score
-
-    )
 
 
 
+    result = {
 
-    return {
+
+        "location":
+
+        location,
+
 
 
         "risk_level":
@@ -252,26 +232,102 @@ def predict_risk(
 
         round(
 
-            confidence * 100,
+            probability * 100,
 
             2
 
-        ),
+        )
 
+        if probability
 
-
-        "model_prediction":
-
-        str(
-
-            model_prediction
-
-        ),
+        else None,
 
 
 
         "features":
 
-        features
+        model_input
 
     }
+
+
+
+
+
+
+
+    # Save prediction
+
+    if db:
+
+
+        prediction_record = RiskPrediction(
+
+
+            location=location,
+
+
+            risk_level=risk_level,
+
+
+            risk_score=risk_score,
+
+
+            confidence=result["confidence"],
+
+
+
+            temperature=
+
+            model_input["temperature"],
+
+
+
+            rainfall=
+
+            model_input["rainfall"],
+
+
+
+            humidity=
+
+            model_input["humidity"],
+
+
+
+            ndvi=
+
+            model_input["ndvi"],
+
+
+
+            rainfall_anomaly=
+
+            model_input["rainfall_anomaly"]
+
+        )
+
+
+
+        db.add(
+
+            prediction_record
+
+        )
+
+
+        db.commit()
+
+
+        db.refresh(
+
+            prediction_record
+
+        )
+
+
+
+
+
+
+    return result

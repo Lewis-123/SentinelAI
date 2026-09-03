@@ -1,7 +1,21 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException
+)
 
 
-from backend.auth.dependencies import get_current_user
+from sqlalchemy.orm import Session
+
+
+from backend.auth.dependencies import (
+    get_current_user
+)
+
+
+from backend.database.database import (
+    get_db
+)
 
 
 from backend.services.automated_prediction import (
@@ -38,14 +52,19 @@ def analyze_location(
 
     current_user = Depends(
         get_current_user
+    ),
+
+    db: Session = Depends(
+        get_db
     )
 
 ):
 
     """
-    Run AI risk analysis for a location.
+    Run AI risk prediction.
 
-    Requires JWT authentication.
+    Prediction is stored
+    in database history.
     """
 
     try:
@@ -55,7 +74,7 @@ def analyze_location(
 
             city,
 
-            None
+            db
 
         )
 
@@ -73,12 +92,6 @@ def analyze_location(
             "role":
 
             current_user["role"],
-
-
-
-            "location":
-
-            city,
 
 
 
@@ -107,44 +120,6 @@ def analyze_location(
 
 
 # =====================================
-# User Profile Endpoint
-# =====================================
-
-@router.get("/user")
-def get_user_profile(
-
-    current_user = Depends(
-        get_current_user
-    )
-
-):
-
-    """
-    Return authenticated user details.
-    """
-
-    return {
-
-
-        "username":
-
-        current_user["username"],
-
-
-
-        "role":
-
-        current_user["role"]
-
-    }
-
-
-
-
-
-
-
-# =====================================
 # GIS Risk Map Endpoint
 # =====================================
 
@@ -158,23 +133,11 @@ def risk_map(
 ):
 
     """
-    Returns geographic risk information
-    for dashboard visualization.
-
-    Includes:
-
-    - location
-    - coordinates
-    - risk level
-    - risk score
-
+    Returns locations and
+    risk information for GIS map.
     """
 
     try:
-
-
-        locations = generate_risk_map()
-
 
 
         return {
@@ -188,7 +151,7 @@ def risk_map(
 
             "locations":
 
-            locations
+            generate_risk_map()
 
         }
 
@@ -205,3 +168,38 @@ def risk_map(
             detail=str(e)
 
         )
+
+
+
+
+
+
+
+# =====================================
+# Current User Endpoint
+# =====================================
+
+@router.get("/user")
+def user_profile(
+
+    current_user = Depends(
+        get_current_user
+    )
+
+):
+
+
+    return {
+
+
+        "username":
+
+        current_user["username"],
+
+
+
+        "role":
+
+        current_user["role"]
+
+    }
