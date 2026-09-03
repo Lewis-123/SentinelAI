@@ -1,7 +1,13 @@
 import RiskPrediction from "./RiskPrediction";
+
 import RiskAnalytics from "./RiskAnalytics";
+
 import RiskMap from "./RiskMap";
+
 import Alerts from "./Alerts";
+
+import RiskHistory from "./RiskHistory";
+
 
 
 function Dashboard(){
@@ -39,13 +45,11 @@ function Dashboard(){
 
                 <div className="bg-white rounded-xl shadow p-6">
 
-
                     <h2 className="font-semibold">
 
                         Environmental Monitoring
 
                     </h2>
-
 
                     <p className="text-3xl font-bold text-green-600 mt-3">
 
@@ -53,14 +57,12 @@ function Dashboard(){
 
                     </p>
 
-
                 </div>
 
 
 
 
                 <div className="bg-white rounded-xl shadow p-6">
-
 
                     <h2 className="font-semibold">
 
@@ -68,13 +70,11 @@ function Dashboard(){
 
                     </h2>
 
-
                     <p className="text-3xl font-bold text-blue-600 mt-3">
 
                         Online
 
                     </p>
-
 
                 </div>
 
@@ -83,20 +83,17 @@ function Dashboard(){
 
                 <div className="bg-white rounded-xl shadow p-6">
 
-
                     <h2 className="font-semibold">
 
-                        Alert System
+                        Intelligence Records
 
                     </h2>
 
-
-                    <p className="text-3xl font-bold text-red-600 mt-3">
+                    <p className="text-3xl font-bold text-purple-600 mt-3">
 
                         Active
 
                     </p>
-
 
                 </div>
 
@@ -110,6 +107,9 @@ function Dashboard(){
 
 
             <RiskMap />
+
+
+            <RiskHistory />
 
 
             <Alerts />
