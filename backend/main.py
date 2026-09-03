@@ -4,7 +4,16 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 
+from backend.database.database import engine
+
+from backend.database.models import Base
+
+
+
 from backend.api.routes import router as api_router
+
+from backend.api.history import router as history_router
+
 
 from backend.auth.routes import router as auth_router
 
@@ -12,16 +21,11 @@ from backend.auth.routes import router as auth_router
 from backend.monitoring.scheduler import start_scheduler
 
 
-from backend.database.database import engine
-
-from backend.database.models import Base
-
-
 
 
 
 # =====================================
-# Initialize Database
+# Initialize Database Tables
 # =====================================
 
 Base.metadata.create_all(
@@ -35,7 +39,7 @@ Base.metadata.create_all(
 
 
 # =====================================
-# Create FastAPI Application
+# Create Application
 # =====================================
 
 app = FastAPI(
@@ -43,8 +47,11 @@ app = FastAPI(
     title="SentinelAI",
 
     description=(
-        "AI-powered environmental risk "
-        "early warning system"
+
+        "AI-powered environmental "
+
+        "risk early warning platform"
+
     ),
 
     version="1.0.0"
@@ -83,9 +90,20 @@ app.add_middleware(
 
 
 
+
+
 # =====================================
-# Register Routers
+# Register API Routers
 # =====================================
+
+
+app.include_router(
+
+    auth_router
+
+)
+
+
 
 app.include_router(
 
@@ -97,7 +115,7 @@ app.include_router(
 
 app.include_router(
 
-    auth_router
+    history_router
 
 )
 
@@ -105,23 +123,20 @@ app.include_router(
 
 
 
+
+
 # =====================================
-# Startup Events
+# Startup Services
 # =====================================
+
 
 @app.on_event("startup")
 def startup_event():
 
-    """
-    Start SentinelAI background services.
-
-    Includes:
-
-    - Automated monitoring scheduler
-    - Risk checks
-    """
 
     start_scheduler()
+
+
 
 
 
@@ -131,8 +146,10 @@ def startup_event():
 # Root Endpoint
 # =====================================
 
+
 @app.get("/")
-def home():
+def root():
+
 
     return {
 
@@ -151,13 +168,7 @@ def home():
 
         "version":
 
-        "1.0.0",
-
-
-
-        "message":
-
-        "AI risk monitoring platform operational"
+        "1.0.0"
 
     }
 
@@ -165,12 +176,17 @@ def home():
 
 
 
+
+
+
 # =====================================
-# Health Endpoint
+# Health Check
 # =====================================
 
+
 @app.get("/health")
-def health_check():
+def health():
+
 
     return {
 

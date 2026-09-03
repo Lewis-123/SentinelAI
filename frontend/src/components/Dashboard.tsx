@@ -6,20 +6,24 @@ import LocationAnalyzer from "./LocationAnalyzer";
 import RiskMap from "./RiskMap";
 
 
+
 import AlertPanel from "./dashboard/AlertPanel";
 
 import RiskSummary from "./dashboard/RiskSummary";
 
 import RiskTrend from "./dashboard/RiskTrend";
 
+import RiskHistory from "./dashboard/RiskHistory";
 
 
 
 
-export default function Dashboard() {
+
+export default function Dashboard(){
 
 
-    const [status, setStatus] = useState(
+
+    const [status,setStatus] = useState(
 
         "Checking system..."
 
@@ -29,13 +33,14 @@ export default function Dashboard() {
 
 
 
-    useEffect(() => {
+
+    useEffect(()=>{
 
 
         async function checkSystem(){
 
 
-            try {
+            try{
 
 
                 const response = await fetch(
@@ -58,12 +63,12 @@ export default function Dashboard() {
 
                 }
 
-                else {
+                else{
 
 
                     setStatus(
 
-                        "System Error"
+                        "Backend Error"
 
                     );
 
@@ -71,8 +76,9 @@ export default function Dashboard() {
                 }
 
 
+            }
 
-            } catch {
+            catch{
 
 
                 setStatus(
@@ -80,7 +86,6 @@ export default function Dashboard() {
                     "Backend Offline"
 
                 );
-
 
             }
 
@@ -93,7 +98,8 @@ export default function Dashboard() {
 
 
 
-    }, []);
+    },[]);
+
 
 
 
@@ -102,10 +108,13 @@ export default function Dashboard() {
 
     return (
 
+
         <div className="min-h-screen bg-gray-100 p-6">
 
 
+
             <div className="max-w-7xl mx-auto space-y-8">
+
 
 
 
@@ -126,16 +135,16 @@ export default function Dashboard() {
 
                     <p className="text-gray-600 mt-2">
 
-                        AI-powered environmental risk monitoring and
+                        AI-powered environmental risk
 
-                        early-warning platform
+                        monitoring and early warning system
 
                     </p>
 
 
 
 
-                    <div className="mt-4 flex items-center gap-2">
+                    <div className="mt-4">
 
 
                         <span className="font-semibold">
@@ -146,7 +155,7 @@ export default function Dashboard() {
 
 
 
-                        <span className="text-green-600 font-bold">
+                        <span className="ml-2 text-green-600 font-bold">
 
                             🟢 {status}
 
@@ -158,7 +167,6 @@ export default function Dashboard() {
 
 
                 </section>
-
 
 
 
@@ -190,8 +198,27 @@ export default function Dashboard() {
 
 
 
+                {/* Historical Analytics */}
 
-                {/* Risk Analyzer */}
+
+                <section className="bg-white rounded-xl shadow p-6">
+
+
+                    <RiskHistory />
+
+
+                </section>
+
+
+
+
+
+
+
+
+
+                {/* Location Analysis */}
+
 
                 <section className="bg-white rounded-xl shadow p-6">
 
@@ -211,6 +238,7 @@ export default function Dashboard() {
 
                 {/* GIS Map */}
 
+
                 <section className="bg-white rounded-xl shadow p-6">
 
 
@@ -224,10 +252,13 @@ export default function Dashboard() {
 
 
 
+
             </div>
 
 
+
         </div>
+
 
     );
 
