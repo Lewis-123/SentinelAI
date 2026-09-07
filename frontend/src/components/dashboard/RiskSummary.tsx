@@ -1,7 +1,14 @@
-import { 
-    useEffect, 
-    useState 
+import {
+    useEffect,
+    useState
 } from "react";
+
+
+import {
+    API_URL
+} from "../../config";
+
+
 
 
 
@@ -58,7 +65,9 @@ export default function RiskSummary(){
     async function loadLocations(){
 
 
+
         try{
+
 
 
             const token = localStorage.getItem(
@@ -69,9 +78,15 @@ export default function RiskSummary(){
 
 
 
+
+
             const response = await fetch(
 
-                "http://127.0.0.1:8000/risk-locations",
+
+
+                `${API_URL}/risk-locations`,
+
+
 
                 {
 
@@ -89,7 +104,10 @@ export default function RiskSummary(){
 
                 }
 
+
             );
+
+
 
 
 
@@ -101,16 +119,25 @@ export default function RiskSummary(){
 
 
 
+
+
+
             if(!response.ok){
+
 
 
                 throw new Error(
 
+
                     data.detail ||
+
 
                     "Failed loading locations"
 
+
                 );
+
+
 
             }
 
@@ -118,36 +145,53 @@ export default function RiskSummary(){
 
 
 
+
+
             setLocations(
 
+
                 data.locations || []
+
 
             );
 
 
+
+
+
         }
+
 
 
         catch(err:any){
 
 
+
             setError(
 
+
                 err.message
+
 
             );
 
 
+
         }
+
+
 
 
         finally{
 
 
+
             setLoading(false);
 
 
+
         }
+
 
 
     }
@@ -163,7 +207,33 @@ export default function RiskSummary(){
     useEffect(()=>{
 
 
+
         loadLocations();
+
+
+
+
+
+        const interval = setInterval(
+
+
+
+            loadLocations,
+
+
+
+            60000
+
+
+
+        );
+
+
+
+
+
+        return ()=>clearInterval(interval);
+
 
 
 
@@ -177,15 +247,23 @@ export default function RiskSummary(){
 
 
 
+
+
+
+
     function riskStyle(level:string){
 
 
 
-        const value = level.toUpperCase();
+        const value = level?.toUpperCase();
 
 
 
-        if(value === "HIGH"){
+
+
+
+
+        if(value==="HIGH"){
 
 
             return {
@@ -198,7 +276,12 @@ export default function RiskSummary(){
 
                 bar:
 
-                "bg-red-500"
+                "bg-red-500",
+
+
+                icon:
+
+                "🔴"
 
 
             };
@@ -209,7 +292,10 @@ export default function RiskSummary(){
 
 
 
-        if(value === "LOW"){
+
+
+
+        if(value==="LOW"){
 
 
             return {
@@ -222,13 +308,20 @@ export default function RiskSummary(){
 
                 bar:
 
-                "bg-green-500"
+                "bg-green-500",
+
+
+                icon:
+
+                "🟢"
 
 
             };
 
 
         }
+
+
 
 
 
@@ -244,10 +337,16 @@ export default function RiskSummary(){
 
             bar:
 
-            "bg-yellow-500"
+            "bg-yellow-500",
+
+
+            icon:
+
+            "🟡"
 
 
         };
+
 
 
     }
@@ -260,7 +359,15 @@ export default function RiskSummary(){
 
 
 
+
+
+
+
+
+
     return (
+
+
 
 
         <div className="bg-white rounded-2xl shadow-sm p-6">
@@ -269,10 +376,14 @@ export default function RiskSummary(){
 
 
 
+
+
             <div className="flex justify-between items-center mb-6">
 
 
+
                 <div>
+
 
 
                     <h2 className="text-xl font-bold text-gray-800">
@@ -285,13 +396,28 @@ export default function RiskSummary(){
 
 
 
-                    <p className="text-gray-500 text-sm">
 
 
-                        Top locations with highest environmental risk scores
+                    <p className="text-sm text-gray-500">
+
+
+                        Top environmental risk areas monitored by SentinelAI
 
 
                     </p>
+
+
+
+                </div>
+
+
+
+
+
+                <div className="text-sm text-gray-400">
+
+
+                    Live
 
 
                 </div>
@@ -308,16 +434,22 @@ export default function RiskSummary(){
 
 
 
+
+
+
+
             {loading && (
+
 
 
                 <p className="text-gray-500">
 
 
-                    Loading risk locations...
+                    Loading risk intelligence...
 
 
                 </p>
+
 
 
             )}
@@ -329,16 +461,19 @@ export default function RiskSummary(){
 
 
 
+
             {error && (
 
 
-                <p className="text-red-500">
+
+                <div className="bg-red-50 text-red-600 p-3 rounded-lg">
 
 
                     {error}
 
 
-                </p>
+                </div>
+
 
 
             )}
@@ -354,6 +489,7 @@ export default function RiskSummary(){
             {!loading && locations.length===0 && (
 
 
+
                 <p className="text-gray-500">
 
 
@@ -361,6 +497,7 @@ export default function RiskSummary(){
 
 
                 </p>
+
 
 
             )}
@@ -373,7 +510,13 @@ export default function RiskSummary(){
 
 
 
-            <div className="space-y-4">
+
+
+
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+
 
 
 
@@ -382,10 +525,12 @@ export default function RiskSummary(){
             {
 
 
-            locations.slice(0,5).map(
+            locations.slice(0,6).map(
+
 
 
                 (item,index)=>{
+
 
 
                     const style = riskStyle(
@@ -397,10 +542,17 @@ export default function RiskSummary(){
 
 
 
+
+
+
                     return (
 
 
+
+
+
                     <div
+
 
 
                         key={
@@ -410,7 +562,10 @@ export default function RiskSummary(){
                         }
 
 
-                        className="border rounded-xl p-5 hover:shadow-md transition"
+
+                        className="border rounded-2xl p-5 hover:shadow-lg transition bg-gray-50"
+
+
 
 
                     >
@@ -418,20 +573,25 @@ export default function RiskSummary(){
 
 
 
-                        <div className="flex justify-between items-center">
+
+
+
+                        <div className="flex justify-between items-start">
 
 
 
 
 
-                            <div className="flex items-center gap-4">
+                            <div className="flex gap-3 items-center">
+
+
 
 
 
                                 <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-700">
 
 
-                                    {index + 1}
+                                    #{index+1}
 
 
                                 </div>
@@ -440,7 +600,11 @@ export default function RiskSummary(){
 
 
 
+
+
+
                                 <div>
+
 
 
                                     <h3 className="font-bold text-lg">
@@ -453,20 +617,28 @@ export default function RiskSummary(){
 
 
 
-                                    <p className="text-sm text-gray-500">
 
 
-                                        Environmental monitoring location
+
+                                    <p className="text-xs text-gray-500">
+
+
+                                        Kenya monitoring zone
 
 
                                     </p>
+
 
 
                                 </div>
 
 
 
+
+
                             </div>
+
+
 
 
 
@@ -477,13 +649,20 @@ export default function RiskSummary(){
                             <span
 
 
-                            className={`px-3 py-1 rounded-full text-sm font-bold ${style.badge}`}
+                            className={`px-3 py-1 rounded-full text-xs font-bold ${style.badge}`}
+
 
 
                             >
 
 
+
+                                {style.icon}
+
+                                {" "}
+
                                 {item.risk_level}
+
 
 
                             </span>
@@ -502,10 +681,19 @@ export default function RiskSummary(){
 
 
 
-                        <div className="mt-4 flex justify-between">
 
 
-                            <span className="font-semibold">
+
+
+
+
+                        <div className="mt-5 flex justify-between">
+
+
+
+
+
+                            <span className="font-semibold text-gray-600">
 
 
                                 Risk Score
@@ -515,7 +703,10 @@ export default function RiskSummary(){
 
 
 
-                            <span className="font-bold">
+
+
+
+                            <span className="font-bold text-lg">
 
 
                                 {item.risk_score}/100
@@ -525,6 +716,9 @@ export default function RiskSummary(){
 
 
 
+
+
+
                         </div>
 
 
@@ -533,13 +727,18 @@ export default function RiskSummary(){
 
 
 
-                        <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+
+
+                        <div className="w-full bg-gray-200 rounded-full h-3 mt-3">
+
 
 
                             <div
 
 
-                            className={`${style.bar} h-2 rounded-full`}
+
+                            className={`${style.bar} h-3 rounded-full transition-all`}
+
 
 
                             style={{
@@ -547,10 +746,13 @@ export default function RiskSummary(){
 
                                 width:
 
+
                                 `${item.risk_score}%`
 
 
+
                             }}
+
 
 
                             >
@@ -558,6 +760,7 @@ export default function RiskSummary(){
                             </div>
 
 
+
                         </div>
 
 
@@ -565,22 +768,30 @@ export default function RiskSummary(){
 
 
 
-                        <div className="mt-3 text-xs text-gray-400">
 
 
-                            Coordinates:
 
+                        <div className="mt-4 text-xs text-gray-500">
+
+
+
+                            📍
 
                             {" "}
 
-                            {item.latitude},
+                            {item.latitude.toFixed(4)}
+
+                            ,
 
                             {" "}
 
-                            {item.longitude}
+                            {item.longitude.toFixed(4)}
+
 
 
                         </div>
+
+
 
 
 
@@ -590,10 +801,14 @@ export default function RiskSummary(){
                     </div>
 
 
+
+
                     )
 
 
+
                 }
+
 
 
             )
@@ -601,7 +816,6 @@ export default function RiskSummary(){
 
 
             }
-
 
 
 
@@ -615,7 +829,9 @@ export default function RiskSummary(){
 
 
 
+
         </div>
+
 
 
     );

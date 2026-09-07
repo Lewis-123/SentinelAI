@@ -8,6 +8,15 @@ import {
 } from "react-router-dom";
 
 
+import {
+    API_URL
+} from "../config";
+
+
+
+
+
+
 
 
 
@@ -21,21 +30,43 @@ export default function Register(){
 
 
 
+
+
     const [username,setUsername] = useState("");
 
+
+
     const [password,setPassword] = useState("");
+
+
 
     const [confirmPassword,setConfirmPassword] = useState("");
 
 
 
+
+
+
+
     const [showPassword,setShowPassword] = useState(false);
+
+
 
     const [showConfirmPassword,setShowConfirmPassword] = useState(false);
 
 
 
+
+
+
+
     const [error,setError] = useState("");
+
+
+
+    const [success,setSuccess] = useState("");
+
+
 
     const [loading,setLoading] = useState(false);
 
@@ -47,18 +78,123 @@ export default function Register(){
 
 
 
+
+
+
+    function passwordStrength(){
+
+
+
+        if(password.length < 4){
+
+
+            return "Weak";
+
+
+        }
+
+
+
+        if(password.length < 8){
+
+
+            return "Medium";
+
+
+        }
+
+
+
+        return "Strong";
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    function strengthColor(){
+
+
+
+        const strength = passwordStrength();
+
+
+
+
+
+        if(strength==="Weak"){
+
+
+            return "text-red-500";
+
+
+        }
+
+
+
+
+
+        if(strength==="Medium"){
+
+
+            return "text-yellow-500";
+
+
+        }
+
+
+
+
+
+        return "text-green-600";
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
     async function handleRegister(
+
+
 
         e:React.FormEvent
 
+
+
     ){
+
 
 
         e.preventDefault();
 
 
 
+
+
         setError("");
+
+
+
+        setSuccess("");
+
 
 
 
@@ -67,6 +203,7 @@ export default function Register(){
 
 
         if(password !== confirmPassword){
+
 
 
             setError(
@@ -78,7 +215,33 @@ export default function Register(){
 
             return;
 
+
+
         }
+
+
+
+
+
+
+
+        if(password.length < 6){
+
+
+
+            setError(
+
+                "Password must contain at least 6 characters"
+
+            );
+
+
+            return;
+
+
+
+        }
+
 
 
 
@@ -94,15 +257,23 @@ export default function Register(){
 
 
 
+
         try{
+
+
 
 
 
             const response = await fetch(
 
-                "http://127.0.0.1:8000/auth/register",
+
+
+                `${API_URL}/auth/register`,
+
+
 
                 {
+
 
 
                     method:"POST",
@@ -112,9 +283,12 @@ export default function Register(){
                     headers:{
 
 
+
                         "Content-Type":
 
+
                         "application/json"
+
 
 
                     },
@@ -124,18 +298,26 @@ export default function Register(){
                     body:JSON.stringify({
 
 
+
                         username,
+
 
 
                         password
 
 
+
                     })
+
 
 
                 }
 
+
+
             );
+
+
 
 
 
@@ -151,19 +333,26 @@ export default function Register(){
 
 
 
+
+
             if(!response.ok){
+
 
 
                 throw new Error(
 
 
+
                     data.detail ||
+
 
 
                     "Registration failed"
 
 
+
                 );
+
 
 
             }
@@ -174,11 +363,37 @@ export default function Register(){
 
 
 
-            navigate(
 
-                "/login"
+
+            setSuccess(
+
+
+
+                "Account created successfully. Redirecting..."
+
+
 
             );
+
+
+
+
+
+
+
+
+            setTimeout(()=>{
+
+
+
+                navigate("/login");
+
+
+
+            },1500);
+
+
+
 
 
 
@@ -192,27 +407,43 @@ export default function Register(){
         catch(error:any){
 
 
+
             setError(
 
+
+
                 error.message
+
+
 
             );
 
 
+
         }
+
+
 
 
 
         finally{
 
 
+
             setLoading(false);
+
 
 
         }
 
 
+
+
+
     }
+
+
+
 
 
 
@@ -226,7 +457,11 @@ export default function Register(){
 
 
 
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100">
+
+
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100 px-4">
+
+
 
 
 
@@ -255,6 +490,9 @@ export default function Register(){
                 <div className="text-center mb-8">
 
 
+
+
+
                     <h1 className="text-3xl font-bold text-blue-700">
 
 
@@ -262,6 +500,9 @@ export default function Register(){
 
 
                     </h1>
+
+
+
 
 
 
@@ -274,6 +515,10 @@ export default function Register(){
                     </p>
 
 
+
+
+
+
                 </div>
 
 
@@ -284,7 +529,10 @@ export default function Register(){
 
 
 
-                {error && (
+                {
+
+                error && (
+
 
 
                     <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-5">
@@ -296,7 +544,37 @@ export default function Register(){
                     </div>
 
 
-                )}
+
+                )
+
+                }
+
+
+
+
+
+
+
+
+                {
+
+                success && (
+
+
+
+                    <div className="bg-green-100 text-green-700 p-3 rounded-lg mb-5">
+
+
+                        {success}
+
+
+                    </div>
+
+
+
+                )
+
+                }
 
 
 
@@ -318,7 +596,10 @@ export default function Register(){
 
 
 
+
                 <input
+
+
 
 
                     className="border w-full p-3 rounded-xl mt-2 mb-4 focus:ring-2 focus:ring-blue-400"
@@ -342,6 +623,7 @@ export default function Register(){
                         )
 
                     }
+
 
 
                 />
@@ -368,10 +650,16 @@ export default function Register(){
 
 
 
+
+
                 <div className="relative">
 
 
+
+
+
                     <input
+
 
 
 
@@ -380,7 +668,6 @@ export default function Register(){
 
 
                         type={
-
 
                             showPassword
 
@@ -391,7 +678,6 @@ export default function Register(){
                             :
 
                             "password"
-
 
                         }
 
@@ -416,7 +702,13 @@ export default function Register(){
                         }
 
 
+
                     />
+
+
+
+
+
 
 
 
@@ -424,10 +716,12 @@ export default function Register(){
                     <button
 
 
+
                         type="button"
 
 
-                        className="absolute right-3 top-4 text-gray-500"
+
+                        className="absolute right-3 top-4"
 
 
 
@@ -444,17 +738,63 @@ export default function Register(){
                         }
 
 
+
                     >
 
 
-                        {showPassword ? "🙈" : "👁️"}
+                        {
+
+
+                        showPassword
+
+                        ?
+
+                        "🙈"
+
+                        :
+
+                        "👁️"
+
+
+
+                        }
 
 
                     </button>
 
 
 
+
+
+
+
                 </div>
+
+
+
+
+
+
+
+
+                <p className={`text-sm mt-2 ${strengthColor()}`}>
+
+
+
+                    Password strength:
+
+                    {" "}
+
+
+                    {passwordStrength()}
+
+
+
+                </p>
+
+
+
+
 
 
 
@@ -479,10 +819,15 @@ export default function Register(){
 
 
 
+
                 <div className="relative">
 
 
+
+
+
                     <input
+
 
 
 
@@ -491,7 +836,6 @@ export default function Register(){
 
 
                         type={
-
 
                             showConfirmPassword
 
@@ -502,7 +846,6 @@ export default function Register(){
                             :
 
                             "password"
-
 
                         }
 
@@ -527,7 +870,12 @@ export default function Register(){
                         }
 
 
+
                     />
+
+
+
+
 
 
 
@@ -536,10 +884,12 @@ export default function Register(){
                     <button
 
 
+
                         type="button"
 
 
-                        className="absolute right-3 top-4 text-gray-500"
+
+                        className="absolute right-3 top-4"
 
 
 
@@ -556,19 +906,41 @@ export default function Register(){
                         }
 
 
+
                     >
 
 
+                        {
 
-                        {showConfirmPassword ? "🙈" : "👁️"}
 
+                        showConfirmPassword
+
+                        ?
+
+                        "🙈"
+
+                        :
+
+                        "👁️"
+
+
+
+                        }
 
 
                     </button>
 
 
 
+
+
+
+
+
                 </div>
+
+
+
 
 
 
@@ -586,11 +958,12 @@ export default function Register(){
 
 
 
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-xl mt-6 font-semibold transition"
+                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white p-3 rounded-xl mt-6 font-semibold transition"
 
 
 
                 >
+
 
 
 
@@ -608,7 +981,9 @@ export default function Register(){
                     "Create Account"
 
 
+
                     }
+
 
 
 
@@ -625,6 +1000,7 @@ export default function Register(){
                 <p className="text-center mt-5 text-sm">
 
 
+
                     Already have an account?
 
 
@@ -632,7 +1008,9 @@ export default function Register(){
                     <button
 
 
+
                         type="button"
+
 
 
                         className="text-blue-600 ml-1 font-semibold"
@@ -640,6 +1018,7 @@ export default function Register(){
 
 
                         onClick={()=>navigate("/login")}
+
 
 
                     >
@@ -651,6 +1030,7 @@ export default function Register(){
                     </button>
 
 
+
                 </p>
 
 
@@ -658,7 +1038,12 @@ export default function Register(){
 
 
 
+
+
+
             </form>
+
+
 
 
 

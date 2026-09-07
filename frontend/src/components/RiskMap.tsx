@@ -25,6 +25,14 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 
+import {
+
+    API_URL
+
+} from "../config";
+
+
+
 
 
 
@@ -90,7 +98,12 @@ function createRiskIcon(
 
 
 
-    if(level.toUpperCase() === "LOW"){
+    const riskLevel = level.toUpperCase();
+
+
+
+
+    if(riskLevel === "LOW"){
 
         color = "green";
 
@@ -98,11 +111,13 @@ function createRiskIcon(
 
 
 
-    if(level.toUpperCase() === "HIGH"){
+
+    else if(riskLevel === "HIGH"){
 
         color = "red";
 
     }
+
 
 
 
@@ -147,7 +162,9 @@ function createRiskIcon(
 
         iconAnchor:[12,12]
 
+
     });
+
 
 }
 
@@ -161,11 +178,15 @@ function createRiskIcon(
 
 function MapBounds({
 
+
     locations
+
 
 }:{
 
+
     locations:LocationRisk[]
+
 
 }){
 
@@ -175,7 +196,10 @@ function MapBounds({
 
 
 
+
+
     useEffect(()=>{
+
 
 
         if(locations.length === 0){
@@ -187,7 +211,11 @@ function MapBounds({
 
 
 
+
+
         const bounds = L.latLngBounds(
+
+
 
             locations.map(item=>[
 
@@ -201,9 +229,14 @@ function MapBounds({
 
 
 
+
+
+
         map.fitBounds(
 
+
             bounds,
+
 
             {
 
@@ -211,7 +244,9 @@ function MapBounds({
 
             }
 
+
         );
+
 
 
 
@@ -220,7 +255,9 @@ function MapBounds({
 
 
 
+
     return null;
+
 
 }
 
@@ -244,6 +281,12 @@ export default function RiskMap(){
 
 
 
+    const [error,setError] = useState("");
+
+
+
+
+
 
 
 
@@ -255,6 +298,7 @@ export default function RiskMap(){
         try{
 
 
+
             const token = localStorage.getItem(
 
                 "token"
@@ -263,9 +307,16 @@ export default function RiskMap(){
 
 
 
+
+
+
             const response = await fetch(
 
-                "http://127.0.0.1:8000/risk-map",
+
+
+                `${API_URL}/risk-map`,
+
+
 
                 {
 
@@ -283,7 +334,11 @@ export default function RiskMap(){
 
                 }
 
+
             );
+
+
+
 
 
 
@@ -295,21 +350,51 @@ export default function RiskMap(){
 
 
 
+
+
+
+            if(!response.ok){
+
+
+                throw new Error(
+
+                    data.detail ||
+
+                    "Unable to load risk map"
+
+                );
+
+
+            }
+
+
+
+
+
+
+
+
             setLocations(
+
 
                 data.locations || []
 
+
             );
+
 
 
 
         }
 
 
-        catch(error){
+
+        catch(error:any){
+
 
 
             console.error(
+
 
                 "Risk map loading failed",
 
@@ -318,16 +403,31 @@ export default function RiskMap(){
             );
 
 
+
+            setError(
+
+                error.message
+
+            );
+
+
+
         }
+
+
 
 
         finally{
 
 
+
             setLoading(false);
 
 
+
         }
+
+
 
 
     }
@@ -339,24 +439,34 @@ export default function RiskMap(){
 
 
 
+
     useEffect(()=>{
+
 
 
         loadRiskMap();
 
 
 
+
+
         const timer = setInterval(
+
 
             loadRiskMap,
 
+
             30000
+
 
         );
 
 
 
+
+
         return ()=>clearInterval(timer);
+
 
 
 
@@ -372,7 +482,12 @@ export default function RiskMap(){
 
     return (
 
+
+
         <div className="card">
+
+
+
 
 
 
@@ -388,13 +503,17 @@ export default function RiskMap(){
 
 
 
+
+
             {loading && (
+
 
                 <p>
 
                     Loading risk locations...
 
                 </p>
+
 
             )}
 
@@ -405,7 +524,31 @@ export default function RiskMap(){
 
 
 
+
+            {error && (
+
+
+                <p className="text-red-600">
+
+
+                    {error}
+
+
+                </p>
+
+
+            )}
+
+
+
+
+
+
+
+
+
             <MapContainer
+
 
 
                 center={[
@@ -418,17 +561,23 @@ export default function RiskMap(){
 
 
 
+
                 zoom={6}
+
 
 
 
                 style={{
 
+
                     height:"550px",
+
 
                     width:"100%",
 
+
                     borderRadius:"12px"
+
 
                 }}
 
@@ -441,16 +590,25 @@ export default function RiskMap(){
 
 
 
+
+
+
                 <TileLayer
+
 
 
                     url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 
 
+
                     attribution="&copy; OpenStreetMap contributors"
 
 
+
                 />
+
+
+
 
 
 
@@ -470,26 +628,35 @@ export default function RiskMap(){
 
 
 
+
                 {
+
 
                     locations.map(
 
                         item=>(
 
 
+
                             <Marker
+
 
 
                                 key={item.location}
 
 
+
                                 position={[
+
 
                                     item.latitude,
 
+
                                     item.longitude
 
+
                                 ]}
+
 
 
 
@@ -504,7 +671,12 @@ export default function RiskMap(){
                                 }
 
 
+
                             >
+
+
+
+
 
 
 
@@ -514,7 +686,11 @@ export default function RiskMap(){
 
 
 
-                                    <div className="p-2">
+
+
+                                    <div className="p-3">
+
+
 
 
 
@@ -522,9 +698,13 @@ export default function RiskMap(){
 
                                         <h3 className="font-bold text-lg">
 
+
                                             🇰🇪 {item.location}
 
+
                                         </h3>
+
+
 
 
 
@@ -538,7 +718,9 @@ export default function RiskMap(){
 
 
 
+
                                         <p>
+
 
                                             <strong>
 
@@ -551,6 +733,7 @@ export default function RiskMap(){
 
                                             {item.risk_level}
 
+
                                         </p>
 
 
@@ -559,7 +742,9 @@ export default function RiskMap(){
 
 
 
+
                                         <p>
+
 
                                             <strong>
 
@@ -572,6 +757,7 @@ export default function RiskMap(){
 
                                             {item.risk_score}/100
 
+
                                         </p>
 
 
@@ -583,13 +769,14 @@ export default function RiskMap(){
 
                                         <p>
 
-                                            🌡 Temperature:
 
+                                            🌡 Temperature:
 
                                             {" "}
 
                                             {item.temperature ?? "N/A"} °C
 
+
                                         </p>
 
 
@@ -601,13 +788,14 @@ export default function RiskMap(){
 
                                         <p>
 
-                                            🌧 Rainfall:
 
+                                            🌧 Rainfall:
 
                                             {" "}
 
                                             {item.rainfall ?? "N/A"} mm
 
+
                                         </p>
 
 
@@ -619,13 +807,14 @@ export default function RiskMap(){
 
                                         <p>
 
-                                            💧 Humidity:
 
+                                            💧 Humidity:
 
                                             {" "}
 
                                             {item.humidity ?? "N/A"} %
 
+
                                         </p>
 
 
@@ -637,13 +826,14 @@ export default function RiskMap(){
 
                                         <p>
 
-                                            🌱 NDVI:
 
+                                            🌱 NDVI:
 
                                             {" "}
 
                                             {item.ndvi ?? "N/A"}
 
+
                                         </p>
 
 
@@ -655,12 +845,13 @@ export default function RiskMap(){
 
                                         <p>
 
-                                            🤖 AI Confidence:
 
+                                            🤖 AI Confidence:
 
                                             {" "}
 
                                             {item.confidence ?? "N/A"}%
+
 
                                         </p>
 
@@ -679,7 +870,9 @@ export default function RiskMap(){
 
                                             {" "}
 
+
                                             {
+
 
                                                 item.updated_at
 
@@ -691,14 +884,19 @@ export default function RiskMap(){
 
                                                 ).toLocaleString()
 
+
                                                 :
 
                                                 "N/A"
 
+
                                             }
 
 
+
                                         </p>
+
+
 
 
 
@@ -721,6 +919,7 @@ export default function RiskMap(){
                             </Marker>
 
 
+
                         )
 
                     )
@@ -741,7 +940,10 @@ export default function RiskMap(){
 
 
 
+
+
             <div style={{marginTop:"15px"}}>
+
 
 
                 <span>
@@ -785,6 +987,8 @@ export default function RiskMap(){
 
 
         </div>
+
+
 
     );
 

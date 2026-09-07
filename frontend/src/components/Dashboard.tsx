@@ -4,7 +4,6 @@ import {
 } from "react";
 
 
-
 import LocationAnalyzer from "./LocationAnalyzer";
 
 import RiskMap from "./RiskMap";
@@ -17,6 +16,12 @@ import RiskSummary from "./dashboard/RiskSummary";
 import RiskTrend from "./dashboard/RiskTrend";
 
 import RiskHistory from "./dashboard/RiskHistory";
+
+
+import {
+    API_URL
+} from "../config";
+
 
 
 
@@ -62,6 +67,9 @@ export default function Dashboard(){
     const [locations,setLocations] = useState<LocationRisk[]>([]);
 
 
+    const [loading,setLoading] = useState(true);
+
+
 
 
 
@@ -70,6 +78,8 @@ export default function Dashboard(){
 
 
     useEffect(()=>{
+
+
 
 
 
@@ -83,9 +93,10 @@ export default function Dashboard(){
 
                 const response = await fetch(
 
-                    "http://127.0.0.1:8000/health"
+                    `${API_URL}/health`
 
                 );
+
 
 
 
@@ -117,6 +128,7 @@ export default function Dashboard(){
 
 
             }
+
 
             catch{
 
@@ -162,7 +174,9 @@ export default function Dashboard(){
 
                 const response = await fetch(
 
-                    "http://127.0.0.1:8000/risk-map",
+
+                    `${API_URL}/risk-map`,
+
 
                     {
 
@@ -172,6 +186,7 @@ export default function Dashboard(){
 
                             Authorization:
 
+
                             `Bearer ${token}`
 
 
@@ -180,7 +195,9 @@ export default function Dashboard(){
 
                     }
 
+
                 );
+
 
 
 
@@ -194,34 +211,15 @@ export default function Dashboard(){
 
 
 
-                if(data.locations){
+
+                if(!response.ok){
 
 
+                    throw new Error(
 
-                    const sorted = data.locations.sort(
+                        data.detail ||
 
-                        (
-
-                            a:LocationRisk,
-
-                            b:LocationRisk
-
-                        ) =>
-
-
-                            b.risk_score -
-
-                            a.risk_score
-
-                    );
-
-
-
-
-
-                    setLocations(
-
-                        sorted.slice(0,5)
+                        "Failed loading risk locations"
 
                     );
 
@@ -230,13 +228,67 @@ export default function Dashboard(){
 
 
 
+
+
+
+
+
+                if(data.locations){
+
+
+
+
+
+                    const sorted = data.locations.sort(
+
+
+                        (
+
+                            a:LocationRisk,
+
+                            b:LocationRisk
+
+
+                        ) =>
+
+
+                            b.risk_score -
+
+                            a.risk_score
+
+
+                    );
+
+
+
+
+
+
+
+                    setLocations(
+
+
+                        sorted.slice(0,5)
+
+
+                    );
+
+
+
+                }
+
+
+
+
+
             }
+
 
             catch(error){
 
 
 
-                console.log(
+                console.error(
 
                     "Risk location loading failed",
 
@@ -244,6 +296,16 @@ export default function Dashboard(){
 
                 );
 
+
+
+            }
+
+
+
+            finally{
+
+
+                setLoading(false);
 
 
             }
@@ -261,13 +323,79 @@ export default function Dashboard(){
 
         checkSystem();
 
+
         loadLocations();
 
 
 
 
 
+        const refresh = setInterval(()=>{
+
+
+            loadLocations();
+
+
+        },60000);
+
+
+
+
+
+        return ()=>clearInterval(refresh);
+
+
+
+
+
     },[]);
+
+
+
+
+
+
+
+
+
+
+
+
+    function riskColor(level:string){
+
+
+        const value = level.toUpperCase();
+
+
+
+        if(value==="HIGH"){
+
+
+            return "text-red-600";
+
+
+        }
+
+
+
+        if(value==="MEDIUM"){
+
+
+            return "text-yellow-600";
+
+
+        }
+
+
+
+        return "text-green-600";
+
+
+    }
+
+
+
+
 
 
 
@@ -297,7 +425,8 @@ export default function Dashboard(){
 
 
 
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col md:flex-row justify-between gap-4">
+
 
 
 
@@ -317,6 +446,7 @@ export default function Dashboard(){
 
 
 
+
                         <p className="text-gray-500 mt-2">
 
 
@@ -328,7 +458,6 @@ export default function Dashboard(){
                         </p>
 
 
-
                     </div>
 
 
@@ -338,8 +467,7 @@ export default function Dashboard(){
 
 
 
-                    <div className="hidden md:block">
-
+                    <div>
 
 
                         <span className="font-semibold">
@@ -349,6 +477,8 @@ export default function Dashboard(){
 
 
                         </span>
+
+
 
 
 
@@ -368,11 +498,17 @@ export default function Dashboard(){
 
 
 
+
+
                 </div>
 
 
 
+
             </section>
+
+
+
 
 
 
@@ -412,13 +548,17 @@ export default function Dashboard(){
 
 
 
+
+
+
+
             {/* Highest Risk Locations */}
 
 
 
+
+
             <section className="bg-white rounded-2xl shadow-sm p-6">
-
-
 
 
 
@@ -458,7 +598,33 @@ export default function Dashboard(){
 
                 {
 
-                locations.length===0 && (
+                loading && (
+
+
+                    <p className="text-gray-500">
+
+
+                        Loading locations...
+
+
+                    </p>
+
+
+                )
+
+                }
+
+
+
+
+
+
+
+
+
+                {
+
+                !loading && locations.length===0 && (
 
 
                     <p className="text-gray-500">
@@ -486,37 +652,72 @@ export default function Dashboard(){
 
 
 
+
+
                 {
 
-
                 locations.map(
+
+
 
                     (item,index)=>(
 
 
 
-                        <div
+
+                    <div
 
 
-                        key={index}
+                    key={`${item.location}-${index}`}
 
 
-                        className="flex justify-between items-center border rounded-xl p-4 hover:bg-gray-50"
+                    className="flex justify-between items-center border rounded-xl p-4 hover:bg-gray-50 transition"
 
 
-                        >
+                    >
 
 
 
 
-                            <div className="font-semibold">
 
 
-                                #{index+1}
+                        <div className="font-semibold">
 
-                                {" "}
 
-                                {item.location}
+                            #{index+1}
+
+                            {" "}
+
+                            {item.location}
+
+
+
+                        </div>
+
+
+
+
+
+
+
+
+
+                        <div className="text-right">
+
+
+
+
+
+                            <div
+
+                            className={`font-bold ${riskColor(item.risk_level)}`}
+
+                            >
+
+
+
+                                {item.risk_level}
+
 
 
                             </div>
@@ -527,31 +728,14 @@ export default function Dashboard(){
 
 
 
-                            <div className="text-right">
+                            <div className="text-gray-500">
 
 
-
-                                <div className="font-bold">
-
-
-                                    {item.risk_level}
-
-
-                                </div>
-
-
-
-                                <div className="text-gray-500">
-
-
-                                    {item.risk_score}/100
-
-
-                                </div>
-
+                                {item.risk_score}/100
 
 
                             </div>
+
 
 
 
@@ -561,12 +745,21 @@ export default function Dashboard(){
 
 
 
+
+
+                    </div>
+
+
+
+
                     )
+
 
                 )
 
-
                 }
+
+
 
 
 
@@ -576,7 +769,13 @@ export default function Dashboard(){
 
 
 
+
+
             </section>
+
+
+
+
 
 
 
@@ -606,6 +805,10 @@ export default function Dashboard(){
 
 
 
+
+
+
+
             {/* AI Analyzer */}
 
 
@@ -626,6 +829,10 @@ export default function Dashboard(){
 
 
 
+
+
+
+
             {/* GIS Map */}
 
 
@@ -637,6 +844,7 @@ export default function Dashboard(){
 
 
             </section>
+
 
 
 

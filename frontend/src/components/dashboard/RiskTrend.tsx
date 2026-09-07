@@ -4,6 +4,14 @@ import {
 } from "react";
 
 
+import {
+    API_URL
+} from "../../config";
+
+
+
+
+
 
 
 
@@ -19,7 +27,7 @@ interface TrendItem {
     risk_score:number;
 
 
-    confidence:number;
+    confidence?:number;
 
 
     date:string;
@@ -42,7 +50,9 @@ export default function RiskTrend(){
     const [trend,setTrend] = useState<TrendItem[]>([]);
 
 
+
     const [loading,setLoading] = useState(true);
+
 
 
     const [error,setError] = useState("");
@@ -62,6 +72,7 @@ export default function RiskTrend(){
         try{
 
 
+
             const token = localStorage.getItem(
 
                 "token"
@@ -70,9 +81,17 @@ export default function RiskTrend(){
 
 
 
+
+
+
+
             const response = await fetch(
 
-                "http://127.0.0.1:8000/risk-trend",
+
+
+                `${API_URL}/risk-trend`,
+
+
 
                 {
 
@@ -90,7 +109,10 @@ export default function RiskTrend(){
 
                 }
 
+
             );
+
+
 
 
 
@@ -103,16 +125,24 @@ export default function RiskTrend(){
 
 
 
+
+
+
             if(!response.ok){
+
 
 
                 throw new Error(
 
+
                     data.detail ||
+
 
                     "Failed loading trend"
 
+
                 );
+
 
 
             }
@@ -121,37 +151,55 @@ export default function RiskTrend(){
 
 
 
+
+
+
             setTrend(
 
+
                 data.trend || []
+
 
             );
 
 
 
+
+
         }
+
 
 
         catch(err:any){
 
 
+
             setError(
 
+
                 err.message
+
 
             );
 
 
+
         }
+
+
+
 
 
         finally{
 
 
+
             setLoading(false);
 
 
+
         }
+
 
 
     }
@@ -167,7 +215,33 @@ export default function RiskTrend(){
     useEffect(()=>{
 
 
+
         loadTrend();
+
+
+
+
+
+        const interval = setInterval(
+
+
+
+            loadTrend,
+
+
+
+            60000
+
+
+
+        );
+
+
+
+
+
+        return ()=>clearInterval(interval);
+
 
 
 
@@ -185,7 +259,11 @@ export default function RiskTrend(){
 
 
 
-        const value = level.toUpperCase();
+        const value = level?.toUpperCase();
+
+
+
+
 
 
 
@@ -195,19 +273,33 @@ export default function RiskTrend(){
             return {
 
 
-                badge:"bg-red-100 text-red-700",
+
+                badge:
+
+                "bg-red-100 text-red-700",
 
 
-                bar:"bg-red-500",
+
+                bar:
+
+                "bg-red-500",
 
 
-                icon:"🔴"
+
+                icon:
+
+                "🔴"
+
 
 
             };
 
 
         }
+
+
+
+
 
 
 
@@ -216,16 +308,27 @@ export default function RiskTrend(){
         if(value==="LOW"){
 
 
+
             return {
 
 
-                badge:"bg-green-100 text-green-700",
+
+                badge:
+
+                "bg-green-100 text-green-700",
 
 
-                bar:"bg-green-500",
+
+                bar:
+
+                "bg-green-500",
 
 
-                icon:"🟢"
+
+                icon:
+
+                "🟢"
+
 
 
             };
@@ -237,16 +340,30 @@ export default function RiskTrend(){
 
 
 
+
+
+
+
         return {
 
 
-            badge:"bg-yellow-100 text-yellow-700",
+
+            badge:
+
+            "bg-yellow-100 text-yellow-700",
 
 
-            bar:"bg-yellow-500",
+
+            bar:
+
+            "bg-yellow-500",
 
 
-            icon:"🟡"
+
+            icon:
+
+            "🟡"
+
 
 
         };
@@ -262,7 +379,14 @@ export default function RiskTrend(){
 
 
 
+
+
+
+
+
+
     return (
+
 
 
         <div className="bg-white rounded-2xl shadow-sm p-6">
@@ -272,16 +396,20 @@ export default function RiskTrend(){
 
 
 
+
             <div className="mb-6">
 
 
-                <h2 className="text-xl font-bold">
+
+                <h2 className="text-xl font-bold text-gray-800">
 
 
                     Risk Trend
 
 
                 </h2>
+
+
 
 
 
@@ -292,6 +420,7 @@ export default function RiskTrend(){
 
 
                 </p>
+
 
 
             </div>
@@ -307,13 +436,19 @@ export default function RiskTrend(){
             {loading && (
 
 
+
                 <p className="text-gray-500">
+
 
                     Loading trend data...
 
+
                 </p>
 
+
+
             )}
+
 
 
 
@@ -325,11 +460,16 @@ export default function RiskTrend(){
             {error && (
 
 
+
                 <p className="text-red-500">
+
 
                     {error}
 
+
                 </p>
+
+
 
             )}
 
@@ -344,11 +484,15 @@ export default function RiskTrend(){
             {!loading && trend.length===0 && (
 
 
+
                 <p className="text-gray-500">
+
 
                     No prediction history available.
 
+
                 </p>
+
 
 
             )}
@@ -367,81 +511,101 @@ export default function RiskTrend(){
 
 
 
+
+
             {
 
-                trend.map(
 
-                    (item,index)=>{
-
-
-                        const style = riskStyle(
-
-                            item.risk_level
-
-                        );
+            trend.map(
 
 
 
-                        return (
+                (item,index)=>{
 
 
 
-                        <div
+
+
+                    const style = riskStyle(
+
+
+
+                        item.risk_level
+
+
+
+                    );
+
+
+
+
+
+
+
+
+
+                    return (
+
+
+
+
+
+                    <div
+
 
 
                         key={index}
 
 
+
                         className="border rounded-xl p-5 hover:shadow-md transition"
 
 
-                        >
+
+
+                    >
 
 
 
 
-                            <div className="flex justify-between items-start">
+
+
+
+                        <div className="flex justify-between items-start">
 
 
 
 
 
-                                <div>
 
 
-                                    <div className="flex items-center gap-2">
-
-
-                                        <span>
-
-
-                                            {style.icon}
-
-                                        </span>
+                            <div>
 
 
 
-                                        <h3 className="font-bold text-lg">
+                                <div className="flex items-center gap-2">
 
 
-                                            {item.location}
+
+                                    <span>
 
 
-                                        </h3>
+                                        {style.icon}
 
 
-                                    </div>
+                                    </span>
 
 
 
 
-                                    <p className="text-sm text-gray-500 mt-1">
+
+                                    <h3 className="font-bold text-lg">
 
 
-                                        Prediction recorded
+                                        {item.location}
 
 
-                                    </p>
+                                    </h3>
 
 
 
@@ -452,19 +616,14 @@ export default function RiskTrend(){
 
 
 
-                                <span
+                                <p className="text-sm text-gray-500 mt-1">
 
 
-                                className={`px-3 py-1 rounded-full text-sm font-bold ${style.badge}`}
+                                    Prediction recorded
 
 
-                                >
+                                </p>
 
-
-                                    {item.risk_level}
-
-
-                                </span>
 
 
 
@@ -480,136 +639,25 @@ export default function RiskTrend(){
 
 
 
-                            <div className="grid grid-cols-2 gap-4 mt-5">
+                            <span
 
 
 
+                            className={`px-3 py-1 rounded-full text-sm font-bold ${style.badge}`}
 
 
-                                <div>
 
+                            >
 
-                                    <p className="text-gray-500 text-sm">
 
 
-                                        Risk Score
+                                {item.risk_level}
 
 
-                                    </p>
 
+                            </span>
 
 
-                                    <p className="text-xl font-bold">
-
-
-                                        {item.risk_score}/100
-
-
-                                    </p>
-
-
-
-                                </div>
-
-
-
-
-
-
-                                <div>
-
-
-                                    <p className="text-gray-500 text-sm">
-
-
-                                        AI Confidence
-
-
-                                    </p>
-
-
-
-                                    <p className="text-xl font-bold">
-
-
-                                        {item.confidence || 0}%
-
-
-                                    </p>
-
-
-
-                                </div>
-
-
-
-
-                            </div>
-
-
-
-
-
-
-
-
-                            <div className="mt-4">
-
-
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-
-
-                                    <div
-
-
-                                    className={`${style.bar} h-2 rounded-full`}
-
-
-                                    style={{
-
-
-                                        width:
-
-                                        `${item.risk_score}%`
-
-
-                                    }}
-
-
-                                    >
-
-                                    </div>
-
-
-                                </div>
-
-
-                            </div>
-
-
-
-
-
-
-
-
-                            <div className="mt-4 text-sm text-gray-500">
-
-
-                                📅
-
-
-                                {" "}
-
-                                {new Date(
-
-                                    item.date
-
-                                ).toLocaleString()}
-
-
-
-                            </div>
 
 
 
@@ -619,14 +667,236 @@ export default function RiskTrend(){
                         </div>
 
 
-                        );
 
 
-                    }
 
-                )
+
+
+
+
+
+
+
+                        <div className="grid grid-cols-2 gap-4 mt-5">
+
+
+
+
+
+
+
+                            <div>
+
+
+
+                                <p className="text-gray-500 text-sm">
+
+
+                                    Risk Score
+
+
+                                </p>
+
+
+
+
+
+                                <p className="text-xl font-bold">
+
+
+                                    {item.risk_score}/100
+
+
+                                </p>
+
+
+
+
+                            </div>
+
+
+
+
+
+
+
+
+
+                            <div>
+
+
+
+                                <p className="text-gray-500 text-sm">
+
+
+                                    AI Confidence
+
+
+                                </p>
+
+
+
+
+
+                                <p className="text-xl font-bold">
+
+
+                                    {item.confidence ?? 0}%
+
+
+                                </p>
+
+
+
+
+                            </div>
+
+
+
+
+
+
+
+                        </div>
+
+
+
+
+
+
+
+
+
+                        <div className="mt-4">
+
+
+
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+
+
+
+                                <div
+
+
+
+                                className={`${style.bar} h-2 rounded-full`}
+
+
+
+                                style={{
+
+
+
+                                    width:
+
+
+                                    `${item.risk_score}%`
+
+
+
+                                }}
+
+
+
+                                >
+
+                                </div>
+
+
+
+                            </div>
+
+
+
+
+                        </div>
+
+
+
+
+
+
+
+
+
+                        <div className="mt-4 text-sm text-gray-500">
+
+
+
+                            📅
+
+
+                            {" "}
+
+
+
+                            {
+
+
+                            item.date
+
+
+
+                            ?
+
+
+
+                            new Date(
+
+
+                                item.date
+
+
+                            ).toLocaleString()
+
+
+
+                            :
+
+
+
+                            "N/A"
+
+
+
+                            }
+
+
+
+
+                        </div>
+
+
+
+
+
+
+
+                    </div>
+
+
+
+
+
+                    );
+
+
+
+
+
+                }
+
+
+
+            )
+
+
 
             }
+
+
+
+
 
 
 
@@ -639,6 +909,7 @@ export default function RiskTrend(){
 
 
         </div>
+
 
 
     );

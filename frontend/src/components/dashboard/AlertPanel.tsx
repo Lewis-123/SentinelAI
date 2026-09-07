@@ -1,4 +1,17 @@
-import { useEffect, useState } from "react";
+import {
+    useEffect,
+    useState
+} from "react";
+
+
+import {
+    API_URL
+} from "../../config";
+
+
+
+
+
 
 
 
@@ -7,18 +20,25 @@ interface Alert {
 
     location:string;
 
-    previous_risk:string;
+
+    previous_risk?:string;
+
 
     current_risk:string;
 
+
     risk_score:number;
 
+
     message:string;
+
 
     created_at:string;
 
 
 }
+
+
 
 
 
@@ -38,6 +58,11 @@ export default function AlertPanel(){
 
 
 
+    const [error,setError] = useState("");
+
+
+
+
 
 
 
@@ -50,6 +75,7 @@ export default function AlertPanel(){
         try{
 
 
+
             const token = localStorage.getItem(
 
                 "token"
@@ -58,9 +84,16 @@ export default function AlertPanel(){
 
 
 
+
+
+
             const response = await fetch(
 
-                "http://127.0.0.1:8000/alerts",
+
+
+                `${API_URL}/alerts`,
+
+
 
                 {
 
@@ -70,6 +103,7 @@ export default function AlertPanel(){
 
                         Authorization:
 
+
                         `Bearer ${token}`
 
 
@@ -78,7 +112,11 @@ export default function AlertPanel(){
 
                 }
 
+
             );
+
+
+
 
 
 
@@ -90,39 +128,93 @@ export default function AlertPanel(){
 
 
 
+
+
+
+            if(!response.ok){
+
+
+
+                throw new Error(
+
+
+                    data.detail ||
+
+
+                    "Failed loading alerts"
+
+
+                );
+
+
+
+            }
+
+
+
+
+
+
+
+
             setAlerts(
+
 
                 data.alerts || []
 
+
             );
+
+
+
 
 
 
         }
 
 
-        catch(error){
+
+        catch(error:any){
 
 
-            console.log(
+
+            console.error(
+
 
                 "Alert loading failed",
 
+
                 error
+
 
             );
 
 
+
+            setError(
+
+
+                error.message
+
+
+            );
+
+
+
         }
+
 
 
         finally{
 
 
+
             setLoading(false);
 
 
+
         }
+
 
 
     }
@@ -134,10 +226,37 @@ export default function AlertPanel(){
 
 
 
+
     useEffect(()=>{
 
 
+
         loadAlerts();
+
+
+
+
+
+        const interval = setInterval(
+
+
+
+            loadAlerts,
+
+
+
+            60000
+
+
+
+        );
+
+
+
+
+
+        return ()=>clearInterval(interval);
+
 
 
 
@@ -153,36 +272,122 @@ export default function AlertPanel(){
 
     function severityColor(
 
+
+
         risk:string
+
+
 
     ){
 
 
 
-        if(risk==="HIGH"){
 
 
-            return "border-red-500 bg-red-50";
+        const value = risk?.toUpperCase();
+
+
+
+
+
+
+
+        if(value==="HIGH"){
+
+
+
+            return {
+
+
+                border:
+
+                "border-red-500",
+
+
+                background:
+
+                "bg-red-50",
+
+
+                icon:
+
+                "🔴"
+
+
+            };
 
 
         }
 
 
 
-        if(risk==="MEDIUM"){
 
 
-            return "border-yellow-500 bg-yellow-50";
+
+
+
+
+        if(value==="MEDIUM"){
+
+
+
+            return {
+
+
+                border:
+
+                "border-yellow-500",
+
+
+                background:
+
+                "bg-yellow-50",
+
+
+                icon:
+
+                "🟡"
+
+
+            };
 
 
         }
 
 
 
-        return "border-green-500 bg-green-50";
+
+
+
+
+
+        return {
+
+
+            border:
+
+            "border-green-500",
+
+
+            background:
+
+            "bg-green-50",
+
+
+            icon:
+
+            "🟢"
+
+
+        };
+
 
 
     }
+
+
+
+
 
 
 
@@ -197,17 +402,7 @@ export default function AlertPanel(){
 
 
 
-        <div className="bg-white rounded-xl shadow p-6">
-
-
-
-            <h2 className="text-xl font-bold mb-4">
-
-
-                Active Alerts
-
-
-            </h2>
+        <div className="bg-white rounded-2xl shadow-sm p-6">
 
 
 
@@ -215,45 +410,129 @@ export default function AlertPanel(){
 
 
 
-            {
 
-                loading && (
-
-
-                    <p>
-
-                        Loading alerts...
-
-                    </p>
-
-
-                )
-
-            }
+            <div className="flex justify-between items-center mb-5">
 
 
 
+                <div>
+
+
+
+                    <h2 className="text-xl font-bold text-gray-800">
+
+
+                        Active Alerts
+
+
+                    </h2>
 
 
 
 
-            {
 
-                !loading && alerts.length===0 && (
-
-
-                    <p className="text-gray-500">
+                    <p className="text-sm text-gray-500">
 
 
-                        No active alerts.
+                        Real-time environmental risk notifications
 
 
                     </p>
 
 
-                )
 
-            }
+                </div>
+
+
+
+
+
+                <span className="text-sm text-gray-400">
+
+
+                    Live
+
+
+                </span>
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+            {loading && (
+
+
+
+                <p className="text-gray-500">
+
+
+                    Loading alerts...
+
+
+                </p>
+
+
+
+            )}
+
+
+
+
+
+
+
+
+
+            {error && (
+
+
+
+                <p className="text-red-500">
+
+
+                    {error}
+
+
+                </p>
+
+
+
+            )}
+
+
+
+
+
+
+
+
+
+            {!loading && alerts.length===0 && (
+
+
+
+                <p className="text-gray-500">
+
+
+                    No active alerts.
+
+
+                </p>
+
+
+
+            )}
+
+
+
 
 
 
@@ -267,61 +546,30 @@ export default function AlertPanel(){
 
 
 
+
+
+
+
             {
 
-                alerts.map(
 
-                    (alert,index)=>(
-
-
-                        <div
-
-
-                            key={index}
-
-
-                            className={
-
-                                `border rounded-lg p-4 ${
-
-                                    severityColor(
-
-                                        alert.current_risk
-
-                                    )
-
-                                }`
-
-                            }
-
-
-                        >
+            alerts.map(
 
 
 
-                            <div className="flex justify-between">
-
-
-                                <h3 className="font-bold text-lg">
-
-
-                                    ⚠ {alert.location}
-
-
-                                </h3>
+                (alert,index)=>{
 
 
 
-                                <span className="font-bold">
 
 
-                                    {alert.risk_score}/100
+                    const style = severityColor(
 
 
-                                </span>
+                        alert.current_risk
 
 
-                            </div>
+                    );
 
 
 
@@ -330,37 +578,68 @@ export default function AlertPanel(){
 
 
 
-                            <p className="mt-2">
+                    return (
 
 
-                                Risk changed:
+
+
+
+
+                    <div
+
+
+
+                        key={index}
+
+
+
+                        className={
+
+                            `border-l-4 rounded-xl p-5 ${
+
+                                style.border
+
+                            } ${
+
+                                style.background
+
+                            }`
+
+                        }
+
+
+
+                    >
+
+
+
+
+
+
+
+
+                        <div className="flex justify-between items-start">
+
+
+
+
+
+
+
+                            <h3 className="font-bold text-lg">
+
+
+                                {style.icon}
 
 
                                 {" "}
 
 
-                                <strong>
+                                {alert.location}
 
 
-                                    {alert.previous_risk}
 
-
-                                </strong>
-
-
-                                {" → "}
-
-
-                                <strong>
-
-
-                                    {alert.current_risk}
-
-
-                                </strong>
-
-
-                            </p>
+                            </h3>
 
 
 
@@ -368,38 +647,13 @@ export default function AlertPanel(){
 
 
 
-                            <p>
+                            <span className="font-bold">
 
 
-                                {alert.message}
+                                {alert.risk_score}/100
 
 
-                            </p>
-
-
-
-
-
-
-
-
-                            <small className="text-gray-600">
-
-
-                                Detected:
-
-
-                                {" "}
-
-
-                                {new Date(
-
-                                    alert.created_at
-
-                                ).toLocaleString()}
-
-
-                            </small>
+                            </span>
 
 
 
@@ -408,11 +662,162 @@ export default function AlertPanel(){
                         </div>
 
 
-                    )
 
-                )
+
+
+
+
+
+
+                        <p className="mt-3 text-sm">
+
+
+
+                            Risk transition:
+
+
+
+                            {" "}
+
+
+
+
+
+                            <strong>
+
+
+                                {alert.previous_risk || "Unknown"}
+
+
+                            </strong>
+
+
+
+
+
+                            {" → "}
+
+
+
+
+
+                            <strong>
+
+
+                                {alert.current_risk}
+
+
+                            </strong>
+
+
+
+
+
+                        </p>
+
+
+
+
+
+
+
+
+
+                        <p className="mt-2 text-gray-700">
+
+
+                            {alert.message}
+
+
+                        </p>
+
+
+
+
+
+
+
+
+
+                        <small className="text-gray-500 block mt-3">
+
+
+                            Detected:
+
+
+                            {" "}
+
+
+
+                            {
+
+
+                            alert.created_at
+
+
+
+                            ?
+
+
+
+                            new Date(
+
+
+                                alert.created_at
+
+
+                            ).toLocaleString()
+
+
+
+                            :
+
+
+
+                            "N/A"
+
+
+
+                            }
+
+
+
+                        </small>
+
+
+
+
+
+
+
+
+
+                    </div>
+
+
+
+
+
+
+
+                    );
+
+
+
+                }
+
+
+
+            )
+
+
 
             }
+
+
+
+
+
 
 
 
@@ -422,7 +827,11 @@ export default function AlertPanel(){
 
 
 
+
+
+
         </div>
+
 
 
     );

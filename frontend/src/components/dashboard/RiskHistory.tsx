@@ -4,6 +4,14 @@ import {
 } from "react";
 
 
+import {
+    API_URL
+} from "../../config";
+
+
+
+
+
 
 
 
@@ -19,7 +27,7 @@ interface HistoryItem {
     risk_score:number;
 
 
-    confidence:number;
+    confidence?:number;
 
 
     created_at:string;
@@ -58,7 +66,9 @@ export default function RiskHistory(){
     async function loadHistory(){
 
 
+
         try{
+
 
 
             const token = localStorage.getItem(
@@ -69,9 +79,15 @@ export default function RiskHistory(){
 
 
 
+
+
             const response = await fetch(
 
-                "http://127.0.0.1:8000/history/",
+
+
+                `${API_URL}/history/`,
+
+
 
                 {
 
@@ -81,6 +97,7 @@ export default function RiskHistory(){
 
                         Authorization:
 
+
                         `Bearer ${token}`
 
 
@@ -88,6 +105,7 @@ export default function RiskHistory(){
 
 
                 }
+
 
             );
 
@@ -103,14 +121,21 @@ export default function RiskHistory(){
 
 
 
+
+
+
             if(!response.ok){
+
 
 
                 throw new Error(
 
+
                     data.detail ||
 
+
                     "Failed to load history"
+
 
                 );
 
@@ -121,11 +146,17 @@ export default function RiskHistory(){
 
 
 
+
+
             setHistory(
+
 
                 data.history || []
 
+
             );
+
+
 
 
 
@@ -135,23 +166,31 @@ export default function RiskHistory(){
         catch(error:any){
 
 
+
             setError(
 
+
                 error.message
+
 
             );
 
 
+
         }
+
 
 
         finally{
 
 
+
             setLoading(false);
 
 
+
         }
+
 
 
     }
@@ -190,6 +229,9 @@ export default function RiskHistory(){
 
 
 
+
+
+
         if(value==="HIGH"){
 
 
@@ -201,6 +243,9 @@ export default function RiskHistory(){
 
 
 
+
+
+
         if(value==="LOW"){
 
 
@@ -208,6 +253,10 @@ export default function RiskHistory(){
 
 
         }
+
+
+
+
 
 
 
@@ -225,7 +274,12 @@ export default function RiskHistory(){
 
 
 
+
+
+
+
     return (
+
 
 
         <div className="bg-white rounded-2xl shadow-sm p-6">
@@ -235,10 +289,13 @@ export default function RiskHistory(){
 
 
 
+
             <div className="flex justify-between items-center mb-6">
 
 
+
                 <div>
+
 
 
                     <h2 className="text-xl font-bold text-gray-800">
@@ -251,6 +308,7 @@ export default function RiskHistory(){
 
 
 
+
                     <p className="text-sm text-gray-500">
 
 
@@ -260,7 +318,9 @@ export default function RiskHistory(){
                     </p>
 
 
+
                 </div>
+
 
 
             </div>
@@ -273,14 +333,21 @@ export default function RiskHistory(){
 
 
 
+
+
+
             {loading && (
+
 
 
                 <p className="text-gray-500">
 
+
                     Loading history...
 
+
                 </p>
+
 
 
             )}
@@ -292,14 +359,19 @@ export default function RiskHistory(){
 
 
 
+
             {error && (
+
 
 
                 <p className="text-red-500">
 
+
                     {error}
 
+
                 </p>
+
 
 
             )}
@@ -315,11 +387,15 @@ export default function RiskHistory(){
             {!loading && history.length===0 && (
 
 
+
                 <p className="text-gray-500">
+
 
                     No prediction history available.
 
+
                 </p>
+
 
 
             )}
@@ -334,11 +410,16 @@ export default function RiskHistory(){
 
             {
 
+
             history.length > 0 && (
 
 
 
+
+
             <div className="overflow-x-auto">
+
+
 
 
 
@@ -348,10 +429,15 @@ export default function RiskHistory(){
 
 
 
+
+
+
                 <thead>
 
 
+
                     <tr className="border-b bg-gray-50">
+
 
 
                         <th className="p-4">
@@ -361,11 +447,15 @@ export default function RiskHistory(){
                         </th>
 
 
+
+
                         <th className="p-4">
 
                             Location
 
                         </th>
+
+
 
 
                         <th className="p-4">
@@ -375,11 +465,15 @@ export default function RiskHistory(){
                         </th>
 
 
+
+
                         <th className="p-4">
 
                             Score
 
                         </th>
+
+
 
 
                         <th className="p-4">
@@ -389,6 +483,8 @@ export default function RiskHistory(){
                         </th>
 
 
+
+
                         <th className="p-4">
 
                             Date
@@ -396,7 +492,9 @@ export default function RiskHistory(){
                         </th>
 
 
+
                     </tr>
+
 
 
                 </thead>
@@ -408,35 +506,59 @@ export default function RiskHistory(){
 
 
 
+
                 <tbody>
+
+
+
 
 
                 {
 
 
+
                 history.slice(0,10).map(
+
+
 
                     (item,index)=>(
 
 
+
+
+
                     <tr
+
+
 
                     key={index}
 
+
+
                     className="border-b hover:bg-gray-50 transition"
+
+
 
 
                     >
 
 
 
+
+
+
+
                         <td className="p-4 font-semibold">
+
 
 
                             {index+1}
 
 
+
                         </td>
+
+
 
 
 
@@ -447,22 +569,30 @@ export default function RiskHistory(){
                         <td className="p-4">
 
 
+
                             <div className="font-bold">
+
 
 
                                 {item.location}
 
 
+
                             </div>
+
+
 
 
                             <div className="text-xs text-gray-500">
 
 
+
                                 Environmental prediction
 
 
+
                             </div>
+
 
 
                         </td>
@@ -474,22 +604,31 @@ export default function RiskHistory(){
 
 
 
+
                         <td className="p-4">
+
 
 
                             <span
 
 
+
+
                             className={`px-3 py-1 rounded-full text-sm font-bold ${riskBadge(item.risk_level)}`}
+
+
 
 
                             >
 
 
+
                                 {item.risk_level}
 
 
+
                             </span>
+
 
 
                         </td>
@@ -501,29 +640,41 @@ export default function RiskHistory(){
 
 
 
+
                         <td className="p-4">
+
 
 
                             <div className="font-bold">
 
 
+
                                 {item.risk_score}/100
 
 
+
                             </div>
+
+
+
+
 
 
 
                             <div className="w-28 bg-gray-200 rounded-full h-2 mt-2">
 
 
+
                                 <div
+
 
 
                                 className="bg-blue-500 h-2 rounded-full"
 
 
+
                                 style={{
+
 
 
                                     width:
@@ -531,7 +682,9 @@ export default function RiskHistory(){
                                     `${item.risk_score}%`
 
 
+
                                 }}
+
 
 
                                 >
@@ -539,7 +692,11 @@ export default function RiskHistory(){
                                 </div>
 
 
+
                             </div>
+
+
+
 
 
                         </td>
@@ -555,10 +712,13 @@ export default function RiskHistory(){
                         <td className="p-4 font-semibold">
 
 
-                            {item.confidence || 0}%
+
+                            {item.confidence ?? 0}%
+
 
 
                         </td>
+
 
 
 
@@ -570,23 +730,45 @@ export default function RiskHistory(){
                         <td className="p-4 text-sm text-gray-500">
 
 
+
+
+
                             {
+
+
 
                             item.created_at
 
+
+
                             ?
+
+
 
                             new Date(
 
+
+
                                 item.created_at
+
+
 
                             ).toLocaleString()
 
+
+
                             :
+
+
 
                             "N/A"
 
+
+
                             }
+
+
+
 
 
                         </td>
@@ -596,16 +778,24 @@ export default function RiskHistory(){
 
 
 
+
+
                     </tr>
+
+
 
 
                     )
 
 
+
                 )
 
 
+
                 }
+
+
 
 
 
@@ -616,7 +806,10 @@ export default function RiskHistory(){
 
 
 
+
             </table>
+
+
 
 
 
@@ -624,7 +817,10 @@ export default function RiskHistory(){
 
 
 
+
+
             )
+
 
 
             }
@@ -634,7 +830,9 @@ export default function RiskHistory(){
 
 
 
+
         </div>
+
 
 
     );

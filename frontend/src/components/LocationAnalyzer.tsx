@@ -4,6 +4,13 @@ import {
 } from "react";
 
 
+import {
+    API_URL
+} from "../config";
+
+
+
+
 
 
 
@@ -12,14 +19,18 @@ interface LocationItem {
 
     name:string;
 
+
     county:string;
 
+
     latitude:number;
+
 
     longitude:number;
 
 
 }
+
 
 
 
@@ -35,16 +46,25 @@ export default function LocationAnalyzer(){
     const [locations,setLocations] = useState<LocationItem[]>([]);
 
 
+
     const [location,setLocation] = useState("");
+
 
 
     const [suggestions,setSuggestions] = useState<LocationItem[]>([]);
 
 
+
     const [result,setResult] = useState<any>(null);
 
 
+
     const [loading,setLoading] = useState(false);
+
+
+
+    const [loadingLocations,setLoadingLocations] = useState(true);
+
 
 
     const [error,setError] = useState("");
@@ -60,10 +80,13 @@ export default function LocationAnalyzer(){
     useEffect(()=>{
 
 
+
         async function loadLocations(){
 
 
+
             try{
+
 
 
                 const token = localStorage.getItem(
@@ -74,23 +97,40 @@ export default function LocationAnalyzer(){
 
 
 
+
+
+
+
                 const response = await fetch(
 
-                    "http://127.0.0.1:8000/locations",
+
+
+                    `${API_URL}/locations`,
+
+
 
                     {
 
+
                         headers:{
+
 
                             Authorization:
 
+
                             `Bearer ${token}`
+
 
                         }
 
+
                     }
 
+
                 );
+
+
+
 
 
 
@@ -102,9 +142,60 @@ export default function LocationAnalyzer(){
 
 
 
+
+
+
+                if(!response.ok){
+
+
+                    throw new Error(
+
+
+                        data.detail ||
+
+
+                        "Failed loading locations"
+
+
+                    );
+
+
+                }
+
+
+
+
+
+
+
                 setLocations(
 
+
                     data.locations || []
+
+
+                );
+
+
+
+
+
+            }
+
+
+
+            catch(error){
+
+
+
+                console.error(
+
+
+                    "Location loading failed",
+
+
+                    error
+
 
                 );
 
@@ -112,14 +203,12 @@ export default function LocationAnalyzer(){
 
             }
 
-            catch(error){
 
 
-                console.log(
+            finally{
 
-                    error
 
-                );
+                setLoadingLocations(false);
 
 
             }
@@ -130,11 +219,17 @@ export default function LocationAnalyzer(){
 
 
 
+
+
         loadLocations();
 
 
 
+
     },[]);
+
+
+
 
 
 
@@ -152,15 +247,24 @@ export default function LocationAnalyzer(){
 
 
 
+        setError("");
+
+
+
+
+
 
 
         if(!value){
 
 
+
             setSuggestions([]);
 
 
+
             return;
+
 
 
         }
@@ -171,9 +275,13 @@ export default function LocationAnalyzer(){
 
 
 
+
         const matches = locations.filter(
 
+
+
             item =>
+
 
 
                 item.name
@@ -186,19 +294,32 @@ export default function LocationAnalyzer(){
 
                 )
 
+
+
         );
+
+
+
+
 
 
 
 
         setSuggestions(
 
+
             matches.slice(0,8)
+
 
         );
 
 
+
     }
+
+
+
+
 
 
 
@@ -211,17 +332,26 @@ export default function LocationAnalyzer(){
     function selectLocation(item:LocationItem){
 
 
+
         setLocation(
+
 
             item.name
 
+
         );
+
 
 
         setSuggestions([]);
 
 
+
+
     }
+
+
+
 
 
 
@@ -237,7 +367,16 @@ export default function LocationAnalyzer(){
 
         if(!location){
 
+
+            setError(
+
+                "Please select a location first"
+
+            );
+
+
             return;
+
 
         }
 
@@ -246,11 +385,18 @@ export default function LocationAnalyzer(){
 
 
 
+
         setLoading(true);
+
+
 
         setError("");
 
+
+
         setResult(null);
+
+
 
 
 
@@ -269,9 +415,22 @@ export default function LocationAnalyzer(){
 
 
 
+
+
+
+
+
             const response = await fetch(
 
-                `http://127.0.0.1:8000/analyze/${location}`,
+
+
+                `${API_URL}/analyze/${
+
+                    encodeURIComponent(location)
+
+                }`,
+
+
 
                 {
 
@@ -281,6 +440,7 @@ export default function LocationAnalyzer(){
 
                         Authorization:
 
+
                         `Bearer ${token}`
 
 
@@ -289,7 +449,10 @@ export default function LocationAnalyzer(){
 
                 }
 
+
             );
+
+
 
 
 
@@ -303,19 +466,30 @@ export default function LocationAnalyzer(){
 
 
 
+
+
             if(!response.ok){
+
 
 
                 throw new Error(
 
+
+
                     data.detail ||
 
+
+
                     "Analysis failed"
+
+
 
                 );
 
 
+
             }
+
 
 
 
@@ -327,6 +501,9 @@ export default function LocationAnalyzer(){
 
 
 
+
+
+
         }
 
 
@@ -334,28 +511,42 @@ export default function LocationAnalyzer(){
         catch(err:any){
 
 
+
             setError(
 
+
                 err.message
+
 
             );
 
 
+
         }
+
+
 
 
 
         finally{
 
 
+
             setLoading(false);
+
 
 
         }
 
 
 
+
+
     }
+
+
+
+
 
 
 
@@ -369,29 +560,54 @@ export default function LocationAnalyzer(){
 
 
 
-        if(level==="HIGH"){
+        const value = level?.toUpperCase();
+
+
+
+
+
+
+        if(value==="HIGH"){
+
 
 
             return "bg-red-100 text-red-700";
 
 
+
         }
 
 
-        if(level==="LOW"){
+
+
+
+
+
+        if(value==="LOW"){
+
 
 
             return "bg-green-100 text-green-700";
 
 
+
         }
+
+
+
+
 
 
 
         return "bg-yellow-100 text-yellow-700";
 
 
+
     }
+
+
+
+
 
 
 
@@ -412,6 +628,8 @@ export default function LocationAnalyzer(){
 
 
 
+
+
             <h2 className="text-xl font-bold mb-2">
 
 
@@ -419,6 +637,8 @@ export default function LocationAnalyzer(){
 
 
             </h2>
+
+
 
 
 
@@ -443,16 +663,23 @@ export default function LocationAnalyzer(){
             <div className="relative">
 
 
+
+
+
                 <input
+
 
 
                     className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
 
 
+
                     value={location}
 
 
+
                     onChange={(e)=>
+
 
                         handleChange(
 
@@ -460,12 +687,34 @@ export default function LocationAnalyzer(){
 
                         )
 
+
                     }
 
 
-                    placeholder="Search Kenyan location..."
+
+                    placeholder={
+
+                        loadingLocations
+
+                        ?
+
+                        "Loading locations..."
+
+                        :
+
+                        "Search Kenyan location..."
+
+                    }
+
+
+
+                    disabled={loadingLocations}
+
+
 
                 />
+
+
 
 
 
@@ -478,36 +727,53 @@ export default function LocationAnalyzer(){
                 suggestions.length > 0 && (
 
 
-                    <div className="absolute z-10 w-full bg-white border rounded-xl mt-2 shadow">
+
+                    <div className="absolute z-20 w-full bg-white border rounded-xl mt-2 shadow">
+
 
 
                     {
 
+
+
                     suggestions.map(item=>(
+
 
 
 
                         <div
 
 
+
                         key={item.name}
+
 
 
                         onClick={()=>selectLocation(item)}
 
 
+
                         className="p-3 hover:bg-gray-100 cursor-pointer"
+
 
 
                         >
 
 
 
+
+
                             <strong>
+
 
                                 {item.name}
 
+
                             </strong>
+
+
+
+
 
 
 
@@ -516,26 +782,41 @@ export default function LocationAnalyzer(){
 
                                 {item.county}
 
+
                             </span>
+
+
+
+
 
 
 
                         </div>
 
 
+
+
                     ))
+
 
 
                     }
 
 
+
+
+
                     </div>
+
+
 
 
                 )
 
 
+
                 }
+
 
 
 
@@ -555,16 +836,21 @@ export default function LocationAnalyzer(){
             <button
 
 
+
                 onClick={analyzeLocation}
+
 
 
                 disabled={loading}
 
 
+
                 className="mt-4 bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 disabled:bg-gray-400"
 
 
+
             >
+
 
 
                 {
@@ -581,7 +867,9 @@ export default function LocationAnalyzer(){
                 "Analyze Location"
 
 
+
                 }
+
 
 
             </button>
@@ -596,7 +884,9 @@ export default function LocationAnalyzer(){
 
             {
 
+
             error && (
+
 
 
                 <p className="text-red-500 mt-4">
@@ -608,7 +898,10 @@ export default function LocationAnalyzer(){
                 </p>
 
 
+
             )
+
+
 
             }
 
@@ -620,9 +913,16 @@ export default function LocationAnalyzer(){
 
 
 
+
+
+
             {
 
+
+
             result && (
+
+
 
 
 
@@ -632,10 +932,17 @@ export default function LocationAnalyzer(){
 
 
 
+
+
+
                 <div className="flex justify-between items-center">
 
 
+
+
+
                     <div>
+
 
 
                         <h3 className="text-xl font-bold">
@@ -648,6 +955,10 @@ export default function LocationAnalyzer(){
 
 
 
+
+
+
+
                         <p className="text-gray-500">
 
 
@@ -657,7 +968,13 @@ export default function LocationAnalyzer(){
                         </p>
 
 
+
+
+
+
                     </div>
+
+
 
 
 
@@ -667,16 +984,32 @@ export default function LocationAnalyzer(){
                     <span
 
 
-                    className={`px-4 py-2 rounded-full font-bold ${riskStyle(result.risk_level)}`}
+
+                    className={`px-4 py-2 rounded-full font-bold ${
+
+                        riskStyle(
+
+                            result.risk_level
+
+                        )
+
+                    }`}
+
 
 
                     >
 
 
+
                         {result.risk_level}
 
 
+
                     </span>
+
+
+
+
 
 
 
@@ -697,24 +1030,38 @@ export default function LocationAnalyzer(){
 
 
 
+
+
                     <div className="bg-gray-50 rounded-xl p-4">
 
 
                         <p className="text-gray-500 text-sm">
+
 
                             Risk Score
 
+
                         </p>
 
 
+
+
+
                         <strong className="text-xl">
+
 
                             {result.risk_score}/100
 
+
                         </strong>
 
 
+
+
+
                     </div>
+
+
 
 
 
@@ -727,19 +1074,30 @@ export default function LocationAnalyzer(){
 
                         <p className="text-gray-500 text-sm">
 
+
                             Confidence
 
+
                         </p>
+
+
+
 
 
                         <strong className="text-xl">
 
-                            {result.confidence}%
+
+                            {result.confidence ?? 0}%
+
 
                         </strong>
 
 
+
+
+
                     </div>
+
 
 
 
@@ -752,20 +1110,31 @@ export default function LocationAnalyzer(){
 
 
                         <p className="text-gray-500 text-sm">
+
 
                             Temperature
 
+
                         </p>
+
+
+
 
 
                         <strong>
 
-                            {result.features?.temperature}°C
+
+                            {result.features?.temperature ?? "N/A"}°C
+
 
                         </strong>
 
 
+
+
+
                     </div>
+
 
 
 
@@ -779,25 +1148,39 @@ export default function LocationAnalyzer(){
 
                         <p className="text-gray-500 text-sm">
 
+
                             Rainfall
+
 
                         </p>
 
 
+
+
+
                         <strong>
 
-                            {result.features?.rainfall} mm
+
+                            {result.features?.rainfall ?? "N/A"} mm
+
 
                         </strong>
 
 
+
+
+
                     </div>
+
 
 
 
 
 
                 </div>
+
+
+
 
 
 
@@ -808,30 +1191,47 @@ export default function LocationAnalyzer(){
 
 
 
+
+
                     <div>
+
 
                         💧 Humidity:
 
+
                         {" "}
 
-                        {result.features?.humidity}%
+
+                        {result.features?.humidity ?? "N/A"}%
+
 
 
                     </div>
+
+
+
 
 
 
 
                     <div>
 
+
                         🌱 NDVI:
+
 
                         {" "}
 
-                        {result.features?.ndvi}
+
+                        {result.features?.ndvi ?? "N/A"}
+
 
 
                     </div>
+
+
+
+
 
 
 
@@ -841,11 +1241,18 @@ export default function LocationAnalyzer(){
 
 
 
+
+
+
             </div>
 
 
 
+
+
             )
+
+
 
             }
 
@@ -856,7 +1263,9 @@ export default function LocationAnalyzer(){
 
 
 
+
         </div>
+
 
 
     );

@@ -13,6 +13,11 @@ import {
 } from "react-router-dom";
 
 
+import {
+    API_URL
+} from "../config";
+
+
 
 
 
@@ -79,19 +84,18 @@ export default function Login(){
 
 
 
+
         try{
 
 
 
             const response = await fetch(
 
-                "http://127.0.0.1:8000/auth/login",
+                `${API_URL}/auth/login`,
 
                 {
 
-
                     method:"POST",
-
 
 
                     headers:{
@@ -103,7 +107,6 @@ export default function Login(){
 
 
                     },
-
 
 
                     body:JSON.stringify({
@@ -162,10 +165,6 @@ export default function Login(){
 
 
 
-
-            // Save JWT token
-
-
             login(
 
                 data.access_token
@@ -177,9 +176,6 @@ export default function Login(){
 
 
 
-
-
-            // Save logged-in user
 
 
             localStorage.setItem(
@@ -252,6 +248,7 @@ export default function Login(){
 
 
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100">
+
 
 
 
@@ -345,6 +342,7 @@ export default function Login(){
 
 
 
+
                 <input
 
 
@@ -390,6 +388,8 @@ export default function Login(){
 
 
                 </label>
+
+
 
 
 
@@ -478,7 +478,6 @@ export default function Login(){
 
 
                 </button>
-
 
 
 
