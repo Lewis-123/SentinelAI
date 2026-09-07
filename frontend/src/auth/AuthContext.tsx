@@ -1,9 +1,16 @@
 import {
     createContext,
     useContext,
-    useState,
+    useState
+} from "react";
+
+
+import type {
     ReactNode
 } from "react";
+
+
+
 
 
 
@@ -29,11 +36,18 @@ interface AuthContextType {
 
 
 
+
+
+
+
 const AuthContext = createContext<AuthContextType | undefined>(
 
     undefined
 
 );
+
+
+
 
 
 
@@ -51,6 +65,7 @@ export function AuthProvider({
 }){
 
 
+
     const [token,setToken] = useState<string | null>(
 
         localStorage.getItem(
@@ -66,11 +81,13 @@ export function AuthProvider({
 
 
 
+
     function login(
 
         newToken:string
 
     ){
+
 
 
         localStorage.setItem(
@@ -82,13 +99,19 @@ export function AuthProvider({
         );
 
 
+
         setToken(
 
             newToken
 
         );
 
+
     }
+
+
+
+
 
 
 
@@ -99,6 +122,7 @@ export function AuthProvider({
     function logout(){
 
 
+
         localStorage.removeItem(
 
             "token"
@@ -106,11 +130,13 @@ export function AuthProvider({
         );
 
 
+
         setToken(
 
             null
 
         );
+
 
     }
 
@@ -120,25 +146,39 @@ export function AuthProvider({
 
 
 
+
+
     return (
+
+
 
         <AuthContext.Provider
 
+
             value={{
+
 
                 token,
 
+
                 login,
+
 
                 logout
 
+
             }}
+
 
         >
 
+
             {children}
 
+
         </AuthContext.Provider>
+
+
 
     );
 
@@ -150,7 +190,10 @@ export function AuthProvider({
 
 
 
+
+
 export function useAuth(){
+
 
 
     const context = useContext(
@@ -158,6 +201,8 @@ export function useAuth(){
         AuthContext
 
     );
+
+
 
 
 
@@ -170,10 +215,14 @@ export function useAuth(){
 
         );
 
+
     }
 
 
 
+
+
     return context;
+
 
 }

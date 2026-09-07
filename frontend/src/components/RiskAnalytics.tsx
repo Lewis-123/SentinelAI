@@ -12,7 +12,10 @@ import {
 } from "recharts";
 
 
+
+
 function RiskAnalytics(){
+
 
 
   const riskData = [
@@ -33,6 +36,8 @@ function RiskAnalytics(){
     }
 
   ];
+
+
 
 
 
@@ -66,22 +71,52 @@ function RiskAnalytics(){
 
 
 
+
+
+  const COLORS = [
+
+    "#22c55e",
+
+    "#eab308",
+
+    "#ef4444"
+
+  ];
+
+
+
+
+
+
+
   return (
+
+
 
     <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
 
 
 
+
+
+
       {/* Risk Distribution */}
+
 
       <div className="bg-white rounded-xl shadow p-6">
 
 
+
         <h2 className="text-xl font-bold mb-5">
+
 
           Risk Distribution
 
+
         </h2>
+
+
+
 
 
 
@@ -91,42 +126,77 @@ function RiskAnalytics(){
           <PieChart>
 
 
+
             <Pie
+
 
               data={riskData}
 
+
               dataKey="value"
+
 
               nameKey="name"
 
+
               outerRadius={100}
 
+
               label
+
 
             >
 
 
-              {
-                riskData.map(
-                  (entry,index)=>(
 
-                    <Cell key={index}/>
+
+              {
+
+                riskData.map(
+
+                  (_,index)=>(
+
+
+                    <Cell
+
+
+                      key={index}
+
+
+                      fill={COLORS[index]}
+
+
+                    />
+
 
                   )
+
                 )
+
               }
+
+
+
 
 
             </Pie>
 
 
+
+
+
             <Tooltip />
+
+
 
 
           </PieChart>
 
 
+
+
         </ResponsiveContainer>
+
 
 
       </div>
@@ -134,16 +204,29 @@ function RiskAnalytics(){
 
 
 
+
+
+
+
+
       {/* Environmental Trends */}
+
+
 
       <div className="bg-white rounded-xl shadow p-6">
 
 
+
         <h2 className="text-xl font-bold mb-5">
+
 
           Environmental Trends
 
+
         </h2>
+
+
+
 
 
 
@@ -153,52 +236,79 @@ function RiskAnalytics(){
           <BarChart data={environmentalData}>
 
 
+
             <CartesianGrid strokeDasharray="3 3"/>
+
 
 
             <XAxis dataKey="month"/>
 
 
+
             <YAxis/>
+
 
 
             <Tooltip/>
 
 
 
+
+
+
             <Bar
+
 
               dataKey="rainfall"
 
+
               fill="#2563eb"
 
+
             />
+
+
+
 
 
             <Bar
 
+
               dataKey="temperature"
+
 
               fill="#dc2626"
 
+
             />
+
+
 
 
           </BarChart>
 
 
+
         </ResponsiveContainer>
+
 
 
       </div>
 
 
 
+
+
+
+
     </div>
 
-  )
+
+
+  );
 
 }
+
 
 
 export default RiskAnalytics;
