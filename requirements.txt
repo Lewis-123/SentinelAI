@@ -1,11 +1,45 @@
+# Data Science / Machine Learning
 numpy
 pandas
 scikit-learn
+
+
+# Visualization (optional for notebooks)
 matplotlib
 seaborn
 jupyter
+
+
+# Backend API
 fastapi
-uvicorn
-pydantic
+uvicorn[standard]
+
+
+# Database
+sqlalchemy
+psycopg2-binary
+
+
+# Authentication
+python-jose[cryptography]
+passlib[bcrypt]
+
+
+# Configuration
 python-dotenv
+
+
+# API Requests
 requests
+
+
+# Validation
+pydantic
+
+
+# Forms / Uploads
+python-multipart
+
+
+# Background Scheduler
+apscheduler
