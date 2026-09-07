@@ -10,8 +10,6 @@ data/processed/
 # Environment
 .env
 
-# Models
-*.pkl
 
 # VS Code
 .vscode/
