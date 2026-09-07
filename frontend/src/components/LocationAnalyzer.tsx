@@ -1,75 +1,63 @@
-import {
-    useState
-} from "react";
+import { useState } from "react";
 
 
 
 
 
-interface PredictionResult {
+const LOCATIONS = [
 
+    "Nairobi",
 
-    location:string;
+    "Mombasa",
 
-    risk_level:string;
+    "Kisumu",
 
-    risk_score:number;
+    "Nakuru",
 
-    confidence:number | null;
+    "Eldoret",
 
+    "Garissa",
 
-    features?:{
+    "Kitale",
 
-        temperature:number;
+    "Kakamega",
 
-        rainfall:number;
+    "Machakos",
 
-        humidity:number;
+    "Meru",
 
-        population:number;
+    "Nyeri",
 
-        density:number;
+    "Malindi",
 
-        poverty_rate:number;
+    "Kilifi",
 
-        ndvi:number;
+    "Narok",
 
-        rainfall_anomaly:number;
+    "Isiolo",
 
-    };
+    "Turkana"
 
-
-}
-
-
-
-
-
-export default function LocationAnalyzer(){
+];
 
 
 
-    const [location,setLocation] =
-
-        useState("");
 
 
 
-    const [result,setResult] =
 
-        useState<PredictionResult | null>(null);
-
+export default function LocationAnalyzer() {
 
 
-    const [loading,setLoading] =
+    const [location, setLocation] = useState("");
 
-        useState(false);
+    const [suggestions, setSuggestions] = useState<string[]>([]);
 
+    const [result, setResult] = useState<any>(null);
 
+    const [loading, setLoading] = useState(false);
 
-    const [error,setError] =
-
-        useState("");
+    const [error, setError] = useState("");
 
 
 
@@ -78,17 +66,81 @@ export default function LocationAnalyzer(){
 
 
 
-    async function analyzeLocation(){
+    function handleChange(
+
+        value: string
+
+    ) {
+
+
+        setLocation(value);
 
 
 
-        if(!location){
+        if (!value) {
 
-            setError(
+            setSuggestions([]);
 
-                "Enter a location"
+            return;
 
-            );
+        }
+
+
+
+        const matches = LOCATIONS.filter(
+
+            city =>
+
+                city
+
+                .toLowerCase()
+
+                .includes(
+
+                    value.toLowerCase()
+
+                )
+
+        );
+
+
+
+        setSuggestions(matches);
+
+    }
+
+
+
+
+
+
+
+
+    function selectLocation(
+
+        city: string
+
+    ) {
+
+
+        setLocation(city);
+
+        setSuggestions([]);
+
+    }
+
+
+
+
+
+
+
+
+
+    async function analyzeLocation() {
+
+
+        if (!location) {
 
             return;
 
@@ -101,47 +153,38 @@ export default function LocationAnalyzer(){
 
         setError("");
 
+        setResult(null);
 
 
 
 
-        try{
+
+        try {
 
 
+            const token = localStorage.getItem(
 
-            const token =
+                "token"
 
-                localStorage.getItem(
-
-                    "token"
-
-                );
-
-
+            );
 
 
 
             const response = await fetch(
 
-
                 `http://127.0.0.1:8000/analyze/${location}`,
 
                 {
 
-
-                    headers:{
-
+                    headers: {
 
                         Authorization:
 
                         `Bearer ${token}`
 
-
                     }
 
-
                 }
-
 
             );
 
@@ -149,28 +192,22 @@ export default function LocationAnalyzer(){
 
 
 
-
-            const data =
-
-                await response.json();
+            const data = await response.json();
 
 
 
 
 
-
-
-            if(!response.ok){
+            if (!response.ok) {
 
 
                 throw new Error(
 
                     data.detail ||
 
-                    "Prediction failed"
+                    "Analysis failed"
 
                 );
-
 
             }
 
@@ -178,33 +215,24 @@ export default function LocationAnalyzer(){
 
 
 
-
-            setResult(
-
-                data
-
-            );
-
+            setResult(data);
 
 
 
 
         }
 
-
-        catch(error:any){
-
+        catch(err:any){
 
 
             setError(
 
-                error.message
+                err.message
 
             );
 
 
         }
-
 
         finally{
 
@@ -226,10 +254,10 @@ export default function LocationAnalyzer(){
 
     return (
 
-        <div className="space-y-6">
+        <div className="card">
 
 
-            <h2 className="text-xl font-bold">
+            <h2>
 
                 AI Risk Analyzer
 
@@ -239,24 +267,16 @@ export default function LocationAnalyzer(){
 
 
 
-            <div className="flex gap-3">
+            <div style={{position:"relative"}}>
 
 
                 <input
 
-
-                    className="border rounded p-3 flex-1"
-
-
-                    placeholder="Enter location e.g Nairobi"
-
-
                     value={location}
 
+                    onChange={(e)=>
 
-                    onChange={e=>
-
-                        setLocation(
+                        handleChange(
 
                             e.target.value
 
@@ -264,40 +284,58 @@ export default function LocationAnalyzer(){
 
                     }
 
+                    placeholder="Search Kenyan city..."
 
                 />
 
 
 
 
-                <button
+
+                {suggestions.length > 0 && (
 
 
-                    onClick={analyzeLocation}
+                    <div className="suggestions">
 
 
-                    className="bg-blue-600 text-white px-5 rounded"
+                        {suggestions.map(
+
+                            city => (
 
 
-                >
+                                <div
+
+                                    key={city}
+
+                                    className="suggestion"
+
+                                    onClick={()=>
+
+                                        selectLocation(
+
+                                            city
+
+                                        )
+
+                                    }
+
+                                >
+
+                                    {city}
 
 
-                    {
-
-                    loading
-
-                    ?
-
-                    "Analyzing..."
-
-                    :
-
-                    "Analyze"
-
-                    }
+                                </div>
 
 
-                </button>
+                            )
+
+                        )}
+
+
+                    </div>
+
+
+                )}
 
 
 
@@ -309,19 +347,38 @@ export default function LocationAnalyzer(){
 
 
 
+            <button
+
+                onClick={analyzeLocation}
+
+                disabled={loading}
+
+            >
+
+                {loading
+
+                ? "Analyzing..."
+
+                : "Analyze"}
+
+            </button>
+
+
+
+
+
+
+
             {error && (
 
-
-                <div className="text-red-600">
-
+                <p className="error">
 
                     {error}
 
-
-                </div>
-
+                </p>
 
             )}
+
 
 
 
@@ -332,98 +389,77 @@ export default function LocationAnalyzer(){
             {result && (
 
 
+                <div className="analysis-result">
 
-                <div className="bg-gray-50 rounded-xl p-6 space-y-3">
 
-
-                    <h3 className="text-2xl font-bold">
-
+                    <h3>
 
                         {result.location}
-
 
                     </h3>
 
 
 
-
-
                     <p>
 
-
-                        Risk Level:
-
-
-                        {" "}
-
+                        County:
 
                         <b>
 
-                            {result.risk_level}
+                        {" "}
+
+                        {result.county}
 
                         </b>
-
 
                     </p>
 
 
 
+                    <p>
+
+                        Risk Level:
+
+                        <b>
+
+                        {" "}
+
+                        {result.risk_level}
+
+                        </b>
+
+                    </p>
 
 
 
                     <p>
 
-
                         Risk Score:
 
+                        <b>
 
                         {" "}
-
-
-                        <b>
 
                         {result.risk_score}/100
 
                         </b>
 
-
                     </p>
-
-
-
 
 
 
 
                     <p>
 
-
                         Confidence:
-
-
-                        {" "}
-
 
                         <b>
 
+                        {" "}
 
-                        {
-
-                        result.confidence
-
-                        ?
-
-                        `${result.confidence}%`
-
-                        :
-
-                        "N/A"
-
-                        }
-
+                        {result.confidence}%
 
                         </b>
-
 
                     </p>
 
@@ -431,93 +467,59 @@ export default function LocationAnalyzer(){
 
 
 
+                    <h4>
 
+                        Environmental Indicators
 
-                    {result.features && (
-
-
-
-                        <div className="mt-5">
-
-
-                            <h4 className="font-bold">
-
-                                Environmental Indicators
-
-                            </h4>
+                    </h4>
 
 
 
-                            <p>
+                    <p>
 
-                                Temperature:
+                    Temperature:
 
-                                {" "}
+                    {" "}
 
-                                {result.features.temperature}
+                    {result.features?.temperature}
 
-                            </p>
-
-
-
-
-                            <p>
-
-                                Rainfall:
-
-                                {" "}
-
-                                {result.features.rainfall}
-
-                            </p>
+                    </p>
 
 
 
+                    <p>
 
-                            <p>
+                    Rainfall:
 
-                                Humidity:
+                    {" "}
 
-                                {" "}
+                    {result.features?.rainfall}
 
-                                {result.features.humidity}
-
-                            </p>
-
+                    </p>
 
 
 
-                            <p>
+                    <p>
 
-                                NDVI:
+                    Humidity:
 
-                                {" "}
+                    {" "}
 
-                                {result.features.ndvi}
+                    {result.features?.humidity}
 
-                            </p>
-
-
-
-
-                            <p>
-
-                                Rainfall Anomaly:
-
-                                {" "}
-
-                                {result.features.rainfall_anomaly}
-
-                            </p>
+                    </p>
 
 
 
-                        </div>
+                    <p>
 
+                    NDVI:
 
-                    )}
+                    {" "}
 
+                    {result.features?.ndvi}
 
+                    </p>
 
 
 
@@ -525,8 +527,6 @@ export default function LocationAnalyzer(){
 
 
             )}
-
-
 
 
         </div>

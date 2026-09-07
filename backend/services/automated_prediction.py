@@ -11,13 +11,11 @@ from backend.connectors import (
 )
 
 
-
 from backend.services.prediction import (
 
     predict_risk
 
 )
-
 
 
 from backend.services.location import (
@@ -27,63 +25,11 @@ from backend.services.location import (
 )
 
 
+from backend.data.kenya_locations import (
 
+    get_location_coordinates
 
-
-
-
-CITY_COORDINATES = {
-
-
-    "Nairobi":
-
-    {
-
-        "latitude": -1.286389,
-
-        "longitude": 36.817223
-
-    },
-
-
-
-    "nairobi":
-
-    {
-
-        "latitude": -1.286389,
-
-        "longitude": 36.817223
-
-    },
-
-
-
-    "Turkana":
-
-    {
-
-        "latitude": 3.1167,
-
-        "longitude": 35.6
-
-    },
-
-
-
-    "Mombasa":
-
-    {
-
-        "latitude": -4.0435,
-
-        "longitude": 39.6682
-
-    }
-
-}
-
-
+)
 
 
 
@@ -98,8 +44,37 @@ def predict_location_risk(
 
 ):
 
+    """
+    Complete Kenya-wide environmental risk pipeline.
 
-    coordinates = CITY_COORDINATES.get(
+    Flow:
+
+    Location
+        ↓
+    Coordinates
+        ↓
+    Weather
+        ↓
+    Satellite
+        ↓
+    Population
+        ↓
+    Vulnerability
+        ↓
+    AI Prediction
+        ↓
+    Database Save
+
+    """
+
+
+
+    # =====================================
+    # Find Location Coordinates
+    # =====================================
+
+
+    location = get_location_coordinates(
 
         city
 
@@ -107,25 +82,12 @@ def predict_location_risk(
 
 
 
-    if coordinates is None:
-
-
-        coordinates = CITY_COORDINATES.get(
-
-            city.capitalize()
-
-        )
-
-
-
-
-
-    if coordinates is None:
+    if location is None:
 
 
         raise Exception(
 
-            "Location coordinates unavailable"
+            f"Location '{city}' not found. Please select a supported Kenyan location."
 
         )
 
@@ -133,40 +95,57 @@ def predict_location_risk(
 
 
 
+    latitude = location["latitude"]
+
+    longitude = location["longitude"]
+
+
+
+
+
+
+    # =====================================
+    # External Data Sources
+    # =====================================
 
 
     weather = fetch_weather(
 
-        city
+        location["name"]
 
     )
+
 
 
 
 
     satellite = fetch_satellite_data(
 
-        coordinates["latitude"],
+        latitude,
 
-        coordinates["longitude"]
+        longitude
 
     )
+
+
 
 
 
 
     population = fetch_population_data(
 
-        city
+        location["name"]
 
     )
+
+
 
 
 
 
     vulnerability = fetch_vulnerability_data(
 
-        city
+        location["name"]
 
     )
 
@@ -174,6 +153,11 @@ def predict_location_risk(
 
 
 
+
+
+    # =====================================
+    # ML Feature Preparation
+    # =====================================
 
 
     features = {
@@ -185,9 +169,10 @@ def predict_location_risk(
 
             "temperature",
 
-            25
+            0
 
         ),
+
 
 
 
@@ -197,9 +182,10 @@ def predict_location_risk(
 
             "rainfall",
 
-            50
+            0
 
         ),
+
 
 
 
@@ -209,9 +195,10 @@ def predict_location_risk(
 
             "humidity",
 
-            50
+            0
 
         ),
+
 
 
 
@@ -227,6 +214,7 @@ def predict_location_risk(
 
 
 
+
         "density":
 
         population.get(
@@ -236,6 +224,7 @@ def predict_location_risk(
             0
 
         ),
+
 
 
 
@@ -251,15 +240,17 @@ def predict_location_risk(
 
 
 
+
         "ndvi":
 
         satellite.get(
 
             "ndvi",
 
-            0.5
+            0
 
         ),
+
 
 
 
@@ -281,6 +272,12 @@ def predict_location_risk(
 
 
 
+
+    # =====================================
+    # AI Prediction
+    # =====================================
+
+
     prediction = predict_risk(
 
         features,
@@ -295,13 +292,18 @@ def predict_location_risk(
 
 
 
+    # =====================================
+    # Save Location Risk
+    # =====================================
+
+
     save_location_risk(
 
-        city,
+        location["name"],
 
-        coordinates["latitude"],
+        latitude,
 
-        coordinates["longitude"],
+        longitude,
 
         prediction["risk_level"],
 
@@ -317,20 +319,86 @@ def predict_location_risk(
 
 
 
-    prediction["location"] = city
-
-    prediction["features"] = features
-
-    prediction["weather"] = weather
-
-    prediction["environment"] = satellite
-
-    prediction["population"] = population
-
-    prediction["vulnerability"] = vulnerability
+    # =====================================
+    # Final Response
+    # =====================================
 
 
+    return {
+
+
+        "location":
+
+        location["name"],
 
 
 
-    return prediction
+        "county":
+
+        location["county"],
+
+
+
+        "latitude":
+
+        latitude,
+
+
+
+        "longitude":
+
+        longitude,
+
+
+
+        "risk_level":
+
+        prediction["risk_level"],
+
+
+
+        "risk_score":
+
+        prediction["risk_score"],
+
+
+
+        "confidence":
+
+        prediction.get(
+
+            "confidence"
+
+        ),
+
+
+
+        "weather":
+
+        weather,
+
+
+
+        "environment":
+
+        satellite,
+
+
+
+        "population":
+
+        population,
+
+
+
+        "vulnerability":
+
+        vulnerability,
+
+
+
+        "features":
+
+        features
+
+    }
