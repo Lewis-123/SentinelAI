@@ -1,6 +1,6 @@
-import { 
-    useEffect, 
-    useState 
+import {
+    useEffect,
+    useState
 } from "react";
 
 
@@ -51,7 +51,26 @@ type LocationRisk = {
     color: string;
 
 
+    temperature?: number;
+
+
+    rainfall?: number;
+
+
+    humidity?: number;
+
+
+    ndvi?: number;
+
+
+    confidence?: number;
+
+
+    updated_at?: string;
+
+
 };
+
 
 
 
@@ -71,7 +90,7 @@ function createRiskIcon(
 
 
 
-    if(level === "LOW"){
+    if(level.toUpperCase() === "LOW"){
 
         color = "green";
 
@@ -79,11 +98,12 @@ function createRiskIcon(
 
 
 
-    if(level === "HIGH"){
+    if(level.toUpperCase() === "HIGH"){
 
         color = "red";
 
     }
+
 
 
 
@@ -166,8 +186,8 @@ function MapBounds({
 
 
 
-        const bounds = L.latLngBounds(
 
+        const bounds = L.latLngBounds(
 
             locations.map(item=>[
 
@@ -221,6 +241,8 @@ export default function RiskMap(){
 
 
     const [loading,setLoading] = useState(true);
+
+
 
 
 
@@ -316,6 +338,7 @@ export default function RiskMap(){
 
 
 
+
     useEffect(()=>{
 
 
@@ -349,11 +372,7 @@ export default function RiskMap(){
 
     return (
 
-        <div
-
-            className="card"
-
-        >
+        <div className="card">
 
 
 
@@ -362,6 +381,8 @@ export default function RiskMap(){
                 SentinelAI Risk Intelligence Map
 
             </h2>
+
+
 
 
 
@@ -376,6 +397,7 @@ export default function RiskMap(){
                 </p>
 
             )}
+
 
 
 
@@ -411,7 +433,9 @@ export default function RiskMap(){
                 }}
 
 
+
             >
+
 
 
 
@@ -420,18 +444,13 @@ export default function RiskMap(){
                 <TileLayer
 
 
-                    url=
-
-                    "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 
 
-                    attribution=
-
-                    "&copy; OpenStreetMap contributors"
+                    attribution="&copy; OpenStreetMap contributors"
 
 
                 />
-
 
 
 
@@ -489,101 +508,210 @@ export default function RiskMap(){
 
 
 
+
+
                                 <Popup>
 
 
 
-                                    <div>
+                                    <div className="p-2">
 
 
-                                        <h3>
 
+
+
+                                        <h3 className="font-bold text-lg">
 
                                             🇰🇪 {item.location}
-
 
                                         </h3>
 
 
 
 
+
+                                        <hr/>
+
+
+
+
+
+
+
                                         <p>
-
-
-                                            Risk Level:
-
 
                                             <strong>
 
-                                                {" "}
-
-                                                {item.risk_level}
+                                                Risk Level:
 
                                             </strong>
 
-
-                                        </p>
-
-
-
-
-
-                                        <p>
-
-
-                                            Risk Score:
-
-
-                                            <strong>
-
-                                                {" "}
-
-                                                {item.risk_score}/100
-
-                                            </strong>
-
-
-                                        </p>
-
-
-
-
-
-                                        <p>
-
-
-                                            Coordinates:
-
-
-                                            <br/>
-
-
-                                            {item.latitude},
 
                                             {" "}
 
-                                            {item.longitude}
-
+                                            {item.risk_level}
 
                                         </p>
+
+
+
 
 
 
 
                                         <p>
 
+                                            <strong>
 
-                                            SentinelAI Monitoring
+                                                Risk Score:
+
+                                            </strong>
+
+
+                                            {" "}
+
+                                            {item.risk_score}/100
+
+                                        </p>
+
+
+
+
+
+
+
+
+                                        <p>
+
+                                            🌡 Temperature:
+
+
+                                            {" "}
+
+                                            {item.temperature ?? "N/A"} °C
+
+                                        </p>
+
+
+
+
+
+
+
+
+                                        <p>
+
+                                            🌧 Rainfall:
+
+
+                                            {" "}
+
+                                            {item.rainfall ?? "N/A"} mm
+
+                                        </p>
+
+
+
+
+
+
+
+
+                                        <p>
+
+                                            💧 Humidity:
+
+
+                                            {" "}
+
+                                            {item.humidity ?? "N/A"} %
+
+                                        </p>
+
+
+
+
+
+
+
+
+                                        <p>
+
+                                            🌱 NDVI:
+
+
+                                            {" "}
+
+                                            {item.ndvi ?? "N/A"}
+
+                                        </p>
+
+
+
+
+
+
+
+
+                                        <p>
+
+                                            🤖 AI Confidence:
+
+
+                                            {" "}
+
+                                            {item.confidence ?? "N/A"}%
+
+                                        </p>
+
+
+
+
+
+
+
+
+                                        <p className="text-sm text-gray-500">
+
+
+                                            Updated:
+
+
+                                            {" "}
+
+                                            {
+
+                                                item.updated_at
+
+                                                ?
+
+                                                new Date(
+
+                                                    item.updated_at
+
+                                                ).toLocaleString()
+
+                                                :
+
+                                                "N/A"
+
+                                            }
 
 
                                         </p>
+
+
 
 
 
                                     </div>
 
 
+
+
+
                                 </Popup>
+
 
 
 
@@ -612,15 +740,8 @@ export default function RiskMap(){
 
 
 
-            <div
 
-                style={{
-
-                    marginTop:"15px"
-
-                }}
-
-            >
+            <div style={{marginTop:"15px"}}>
 
 
                 <span>
@@ -631,7 +752,7 @@ export default function RiskMap(){
 
 
 
-                {"  "}
+                {"   "}
 
 
 
@@ -643,7 +764,7 @@ export default function RiskMap(){
 
 
 
-                {"  "}
+                {"   "}
 
 
 
@@ -656,6 +777,7 @@ export default function RiskMap(){
 
 
             </div>
+
 
 
 

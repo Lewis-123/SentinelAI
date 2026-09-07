@@ -32,11 +32,22 @@ from backend.services.history import (
 )
 
 
+from backend.services.alerts import (
+
+    create_alert_if_needed
+
+)
+
+
+from backend.database.models import LocationRisk
+
+
 from backend.data.kenya_locations import (
 
     get_location_coordinates
 
 )
+
 
 
 
@@ -53,32 +64,29 @@ def predict_location_risk(
 
 ):
 
+
     """
     Complete Kenya-wide environmental risk pipeline.
 
     Flow:
 
-    User Location
-          ↓
-    Coordinate Lookup
-          ↓
-    Weather Data
-          ↓
-    Satellite Data
-          ↓
-    Population Data
-          ↓
-    Vulnerability Data
-          ↓
+    Location
+        ↓
+    Data Collection
+        ↓
     Feature Engineering
-          ↓
-    AI Risk Prediction
-          ↓
-    Save Risk Location
-          ↓
-    Save Prediction History
+        ↓
+    AI Prediction
+        ↓
+    Alert Detection
+        ↓
+    Location Update
+        ↓
+    Prediction History
 
     """
+
+
 
 
 
@@ -100,7 +108,7 @@ def predict_location_risk(
 
         raise Exception(
 
-            f"Location '{city}' not found. Please select a supported Kenyan location."
+            f"Location '{city}' not found."
 
         )
 
@@ -118,8 +126,46 @@ def predict_location_risk(
 
 
 
+
+
     # =====================================
-    # Data Collection
+    # Previous Risk Check
+    # =====================================
+
+
+    existing_location = (
+
+        db.query(LocationRisk)
+
+        .filter(
+
+            LocationRisk.location == location["name"]
+
+        )
+
+        .first()
+
+    )
+
+
+
+    previous_risk = None
+
+
+
+    if existing_location:
+
+
+        previous_risk = existing_location.risk_level
+
+
+
+
+
+
+
+    # =====================================
+    # Collect Environmental Data
     # =====================================
 
 
@@ -128,7 +174,6 @@ def predict_location_risk(
         location["name"]
 
     )
-
 
 
 
@@ -167,6 +212,8 @@ def predict_location_risk(
 
 
 
+
+
     # =====================================
     # Feature Engineering
     # =====================================
@@ -187,7 +234,6 @@ def predict_location_risk(
 
 
 
-
         "rainfall":
 
         satellite.get(
@@ -197,7 +243,6 @@ def predict_location_risk(
             0
 
         ),
-
 
 
 
@@ -213,7 +258,6 @@ def predict_location_risk(
 
 
 
-
         "population":
 
         population.get(
@@ -223,7 +267,6 @@ def predict_location_risk(
             0
 
         ),
-
 
 
 
@@ -239,7 +282,6 @@ def predict_location_risk(
 
 
 
-
         "poverty_rate":
 
         vulnerability.get(
@@ -252,7 +294,6 @@ def predict_location_risk(
 
 
 
-
         "ndvi":
 
         satellite.get(
@@ -262,7 +303,6 @@ def predict_location_risk(
             0
 
         ),
-
 
 
 
@@ -305,8 +345,37 @@ def predict_location_risk(
 
 
 
+
+
     # =====================================
-    # Save Location Risk For Map
+    # Generate Alert If Risk Increased
+    # =====================================
+
+
+    create_alert_if_needed(
+
+        db,
+
+        location["name"],
+
+        previous_risk,
+
+        prediction["risk_level"],
+
+        prediction["risk_score"]
+
+    )
+
+
+
+
+
+
+
+
+
+    # =====================================
+    # Save Map Location
     # =====================================
 
 
@@ -325,6 +394,8 @@ def predict_location_risk(
         db
 
     )
+
+
 
 
 
@@ -353,8 +424,10 @@ def predict_location_risk(
 
 
 
+
+
     # =====================================
-    # API Response
+    # Response
     # =====================================
 
 
@@ -434,5 +507,6 @@ def predict_location_risk(
         "features":
 
         features
+
 
     }

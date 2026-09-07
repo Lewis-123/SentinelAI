@@ -4,7 +4,6 @@ from backend.database.models import LocationRisk
 
 
 
-
 def save_location_risk(
 
     location,
@@ -21,6 +20,16 @@ def save_location_risk(
 
 ):
 
+
+    # Normalize location name
+
+    location = location.strip().title()
+
+
+
+
+
+    # Check if location already exists
 
     existing = (
 
@@ -40,8 +49,13 @@ def save_location_risk(
 
 
 
+
+
     if existing:
 
+
+
+        # Update existing location
 
         existing.latitude = latitude
 
@@ -54,37 +68,85 @@ def save_location_risk(
 
 
 
-    else:
 
+        db.commit()
 
-        record = LocationRisk(
-
-
-            location=location,
-
-
-            latitude=latitude,
-
-
-            longitude=longitude,
-
-
-            risk_level=risk_level,
-
-
-            risk_score=risk_score
-
-
-        )
-
-
-        db.add(record)
+        db.refresh(existing)
 
 
 
+
+
+        return {
+
+
+            "id": existing.id,
+
+
+            "location": existing.location,
+
+
+            "latitude": existing.latitude,
+
+
+            "longitude": existing.longitude,
+
+
+            "risk_level": existing.risk_level,
+
+
+            "risk_score": existing.risk_score,
+
+
+            "updated_at": existing.updated_at
+
+
+        }
+
+
+
+
+
+
+
+
+
+    # Create new location record
+
+    record = LocationRisk(
+
+
+        location=location,
+
+
+        latitude=latitude,
+
+
+        longitude=longitude,
+
+
+        risk_level=risk_level,
+
+
+        risk_score=risk_score
+
+
+    )
+
+
+
+
+
+
+    db.add(record)
 
 
     db.commit()
+
+
+    db.refresh(record)
+
+
 
 
 
@@ -93,14 +155,25 @@ def save_location_risk(
     return {
 
 
-        "location": location,
+        "id": record.id,
 
-        "latitude": latitude,
 
-        "longitude": longitude,
+        "location": record.location,
 
-        "risk_level": risk_level,
 
-        "risk_score": risk_score
+        "latitude": record.latitude,
+
+
+        "longitude": record.longitude,
+
+
+        "risk_level": record.risk_level,
+
+
+        "risk_score": record.risk_score,
+
+
+        "updated_at": record.updated_at
+
 
     }

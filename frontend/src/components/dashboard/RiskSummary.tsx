@@ -1,36 +1,188 @@
-export default function RiskSummary() {
+import { useEffect, useState } from "react";
 
 
-    const locations = [
 
-        {
-            name:"Turkana",
-            level:"HIGH",
-            score:87
-        },
 
-        {
-            name:"Nairobi",
-            level:"MEDIUM",
-            score:65
-        },
 
-        {
-            name:"Kisumu",
-            level:"LOW",
-            score:35
+interface RiskLocation {
+
+
+    location:string;
+
+
+    risk_level:string;
+
+
+    risk_score:number;
+
+
+    latitude:number;
+
+
+    longitude:number;
+
+
+}
+
+
+
+
+
+
+
+
+
+export default function RiskSummary(){
+
+
+
+    const [locations,setLocations] = useState<RiskLocation[]>([]);
+
+
+    const [loading,setLoading] = useState(true);
+
+
+    const [error,setError] = useState("");
+
+
+
+
+
+
+
+
+    async function loadLocations(){
+
+
+        try{
+
+
+            const token = localStorage.getItem(
+
+                "token"
+
+            );
+
+
+
+            const response = await fetch(
+
+                "http://127.0.0.1:8000/risk-locations",
+
+                {
+
+
+                    headers:{
+
+
+                        Authorization:
+
+                        `Bearer ${token}`
+
+
+                    }
+
+
+                }
+
+            );
+
+
+
+
+
+
+            const data = await response.json();
+
+
+
+
+
+
+            if(!response.ok){
+
+
+                throw new Error(
+
+                    data.detail ||
+
+                    "Failed loading locations"
+
+                );
+
+            }
+
+
+
+
+
+
+            setLocations(
+
+                data.locations || []
+
+            );
+
+
+
+
         }
 
-    ];
+        catch(err:any){
+
+
+            setError(
+
+                err.message
+
+            );
+
+
+        }
+
+
+        finally{
+
+
+            setLoading(false);
+
+
+        }
+
+
+    }
+
+
+
+
+
+
+
+
+    useEffect(()=>{
+
+
+        loadLocations();
+
+
+
+    },[]);
+
+
+
+
+
 
 
 
     return (
 
-        <div className="bg-white rounded-xl shadow p-6">
+
+        <div className="card">
 
 
-            <h2 className="text-xl font-bold mb-4">
+
+            <h2>
 
                 Highest Risk Locations
 
@@ -38,43 +190,119 @@ export default function RiskSummary() {
 
 
 
-            {locations.map((item,index)=>(
 
 
-                <div
-
-                    key={item.name}
-
-                    className="flex justify-between border-b py-3"
-
-                >
-
-                    <span>
-
-                        {index + 1}. {item.name}
-
-                    </span>
 
 
-                    <span>
 
-                        {item.level}
+            {loading && (
 
-                        {" "}
+                <p>
 
-                        {item.score}/100
+                    Loading risk locations...
 
-                    </span>
+                </p>
 
-
-                </div>
+            )}
 
 
-            ))}
+
+
+
+
+            {error && (
+
+                <p className="error">
+
+                    {error}
+
+                </p>
+
+            )}
+
+
+
+
+
+
+
+            {!loading && locations.length===0 && (
+
+                <p>
+
+                    No analyzed locations available.
+
+                </p>
+
+            )}
+
+
+
+
+
+
+
+            {
+
+                locations.map(
+
+                    (item,index)=>(
+
+
+                        <div
+
+                            key={item.location}
+
+                            className="risk-row"
+
+                        >
+
+
+
+                            <span>
+
+
+                                {index + 1}. {item.location}
+
+
+                            </span>
+
+
+
+
+
+
+                            <span>
+
+
+                                {item.risk_level}
+
+                                {" "}
+
+                                {item.risk_score}/100
+
+
+                            </span>
+
+
+
+
+
+
+                        </div>
+
+
+                    )
+
+                )
+
+            }
+
 
 
 
         </div>
+
 
     );
 
