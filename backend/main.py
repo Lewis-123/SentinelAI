@@ -38,6 +38,16 @@ from backend.monitoring.scheduler import start_scheduler
 # =====================================
 
 
+ENVIRONMENT = os.getenv(
+
+    "ENVIRONMENT",
+
+    "development"
+
+)
+
+
+
 FRONTEND_URL = os.getenv(
 
     "FRONTEND_URL",
@@ -48,15 +58,62 @@ FRONTEND_URL = os.getenv(
 
 
 
+# Allow multiple frontend URLs if needed
 
+ADDITIONAL_FRONTENDS = os.getenv(
 
-ENVIRONMENT = os.getenv(
+    "ADDITIONAL_FRONTENDS",
 
-    "ENVIRONMENT",
-
-    "development"
+    ""
 
 )
+
+
+
+
+
+
+
+allowed_origins = [
+
+
+
+    FRONTEND_URL,
+
+
+
+    "http://localhost:5173",
+
+
+
+    "http://127.0.0.1:5173"
+
+
+
+]
+
+
+
+
+
+if ADDITIONAL_FRONTENDS:
+
+
+
+    allowed_origins.extend(
+
+        [
+
+            url.strip()
+
+            for url in ADDITIONAL_FRONTENDS.split(",")
+
+            if url.strip()
+
+        ]
+
+    )
+
 
 
 
@@ -84,7 +141,6 @@ Base.metadata.create_all(
 
 
 
-
 # =====================================
 # Create FastAPI Application
 # =====================================
@@ -96,6 +152,7 @@ app = FastAPI(
     title="SentinelAI",
 
 
+
     description=(
 
         "AI-powered environmental "
@@ -105,6 +162,7 @@ app = FastAPI(
         "for Kenya"
 
     ),
+
 
 
     version="1.0.0"
@@ -127,31 +185,25 @@ app = FastAPI(
 app.add_middleware(
 
 
+
     CORSMiddleware,
 
 
-    allow_origins=[
 
+    allow_origins=allowed_origins,
 
-        FRONTEND_URL,
-
-
-        "http://localhost:5173",
-
-
-        "http://127.0.0.1:5173"
-
-
-    ],
 
 
     allow_credentials=True,
 
 
+
     allow_methods=["*"],
 
 
+
     allow_headers=["*"]
+
 
 
 )
@@ -211,25 +263,46 @@ app.include_router(
 def startup_event():
 
 
+
     try:
+
 
 
         start_scheduler()
 
 
+
         print(
 
-            "SentinelAI scheduler started"
+            "✅ SentinelAI scheduler started"
 
         )
+
+
+
+        print(
+
+            f"Environment: {ENVIRONMENT}"
+
+        )
+
+
+
+        print(
+
+            f"Allowed frontend origins: {allowed_origins}"
+
+        )
+
 
 
     except Exception as e:
 
 
+
         print(
 
-            f"Scheduler startup failed: {e}"
+            f"⚠ Scheduler startup failed: {e}"
 
         )
 
@@ -251,7 +324,9 @@ def startup_event():
 def root():
 
 
+
     return {
+
 
 
         "system":
@@ -277,6 +352,7 @@ def root():
         "1.0.0"
 
 
+
     }
 
 
@@ -288,7 +364,7 @@ def root():
 
 
 # =====================================
-# Health Monitoring Endpoint
+# Health Endpoint
 # =====================================
 
 
@@ -297,7 +373,9 @@ def root():
 def health():
 
 
+
     return {
+
 
 
         "status":
@@ -321,6 +399,7 @@ def health():
         "environment":
 
         ENVIRONMENT
+
 
 
     }

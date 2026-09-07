@@ -1,6 +1,3 @@
-import os
-
-
 from sqlalchemy import create_engine
 
 
@@ -13,7 +10,6 @@ from sqlalchemy.orm import (
 )
 
 
-
 from backend.config import DATABASE_URL
 
 
@@ -23,7 +19,48 @@ from backend.config import DATABASE_URL
 
 
 # =====================================
-# Database Configuration
+# Normalize Database URL
+# =====================================
+
+
+database_url = DATABASE_URL
+
+
+
+
+
+
+# Render sometimes provides postgres://
+# SQLAlchemy requires postgresql://
+
+
+if database_url.startswith(
+
+    "postgres://"
+
+):
+
+
+    database_url = database_url.replace(
+
+        "postgres://",
+
+        "postgresql://",
+
+        1
+
+    )
+
+
+
+
+
+
+
+
+
+# =====================================
+# Database Engine Configuration
 # =====================================
 
 
@@ -31,11 +68,25 @@ connect_args = {}
 
 
 
+engine_options = {
+
+    "pool_pre_ping": True
+
+}
 
 
-# SQLite Development Mode
 
-if DATABASE_URL.startswith(
+
+
+
+
+
+# =====================================
+# SQLite Development
+# =====================================
+
+
+if database_url.startswith(
 
     "sqlite"
 
@@ -56,11 +107,15 @@ if DATABASE_URL.startswith(
 
 
 
-# PostgreSQL Production Mode
 
-elif DATABASE_URL.startswith(
+# =====================================
+# PostgreSQL Production
+# =====================================
 
-    "postgres"
+
+elif database_url.startswith(
+
+    "postgresql"
 
 ):
 
@@ -75,6 +130,23 @@ elif DATABASE_URL.startswith(
 
 
 
+    engine_options.update({
+
+
+        "pool_size": 5,
+
+
+        "max_overflow": 10,
+
+
+        "pool_recycle": 300
+
+
+
+    })
+
+
+
 
 
 
@@ -82,23 +154,24 @@ elif DATABASE_URL.startswith(
 
 
 # =====================================
-# Database Engine
+# Create Database Engine
 # =====================================
 
 
 engine = create_engine(
 
 
-    DATABASE_URL,
+
+    database_url,
+
 
 
     connect_args=connect_args,
 
 
-    pool_pre_ping=True,
 
+    **engine_options
 
-    pool_recycle=300
 
 
 )
@@ -112,20 +185,24 @@ engine = create_engine(
 
 
 # =====================================
-# Session Factory
+# Database Sessions
 # =====================================
 
 
 SessionLocal = sessionmaker(
 
 
+
     autocommit=False,
+
 
 
     autoflush=False,
 
 
+
     bind=engine
+
 
 
 )
@@ -139,7 +216,7 @@ SessionLocal = sessionmaker(
 
 
 # =====================================
-# Base Model
+# Declarative Base
 # =====================================
 
 
@@ -154,23 +231,28 @@ Base = declarative_base()
 
 
 # =====================================
-# Database Dependency
+# FastAPI Database Dependency
 # =====================================
 
 
 def get_db():
 
 
+
     db = SessionLocal()
+
 
 
     try:
 
 
+
         yield db
 
 
+
     finally:
+
 
 
         db.close()
