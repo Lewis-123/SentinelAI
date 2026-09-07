@@ -1,22 +1,18 @@
 import {
-
     useState
-
 } from "react";
 
 
 import {
-
     useAuth
-
 } from "./AuthContext";
 
 
 import {
-
     useNavigate
-
 } from "react-router-dom";
+
+
 
 
 
@@ -37,7 +33,10 @@ export default function Login(){
 
 
 
+
     const navigate = useNavigate();
+
+
 
 
 
@@ -48,6 +47,10 @@ export default function Login(){
     const [password,setPassword] = useState("");
 
     const [error,setError] = useState("");
+
+    const [loading,setLoading] = useState(false);
+
+
 
 
 
@@ -67,7 +70,17 @@ export default function Login(){
 
 
 
+        setError("");
+
+        setLoading(true);
+
+
+
+
+
+
         try{
+
 
 
             const response = await fetch(
@@ -76,27 +89,41 @@ export default function Login(){
 
                 {
 
+
                     method:"POST",
 
+
+
                     headers:{
+
 
                         "Content-Type":
 
                         "application/json"
 
+
                     },
+
+
 
                     body:JSON.stringify({
 
+
                         username,
+
 
                         password
 
+
                     })
+
 
                 }
 
             );
+
+
+
 
 
 
@@ -108,16 +135,23 @@ export default function Login(){
 
 
 
+
+
+
             if(!response.ok){
 
 
                 throw new Error(
 
+
                     data.detail ||
+
 
                     "Login failed"
 
+
                 );
+
 
             }
 
@@ -126,11 +160,40 @@ export default function Login(){
 
 
 
+
+
+
+            // Save JWT token
+
+
             login(
 
                 data.access_token
 
             );
+
+
+
+
+
+
+
+
+            // Save logged-in user
+
+
+            localStorage.setItem(
+
+                "username",
+
+                username
+
+            );
+
+
+
+
+
 
 
 
@@ -143,9 +206,14 @@ export default function Login(){
 
 
 
+
+
+
         }
 
+
         catch(error:any){
+
 
 
             setError(
@@ -154,7 +222,19 @@ export default function Login(){
 
             );
 
+
+
         }
+
+
+        finally{
+
+
+            setLoading(false);
+
+
+        }
+
 
 
     }
@@ -166,77 +246,194 @@ export default function Login(){
 
 
 
+
     return (
 
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
+
+
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100">
+
+
+
+
 
 
             <form
 
+
+
                 onSubmit={handleLogin}
 
-                className="bg-white shadow rounded-xl p-8 w-96"
+
+
+                className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md"
+
+
 
             >
 
 
-                <h1 className="text-2xl font-bold mb-6">
 
-                    SentinelAI Login
 
-                </h1>
+
+
+
+                <div className="text-center mb-8">
+
+
+
+                    <h1 className="text-3xl font-bold text-blue-700">
+
+
+                        SentinelAI
+
+
+                    </h1>
+
+
+
+                    <p className="text-gray-500 mt-2">
+
+
+                        Environmental Risk Intelligence Platform
+
+
+                    </p>
+
+
+
+                </div>
+
+
+
+
+
+
 
 
 
                 {error && (
 
-                    <p className="text-red-500 mb-4">
+
+                    <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-5">
+
 
                         {error}
 
-                    </p>
+
+                    </div>
+
 
                 )}
 
 
 
 
+
+
+
+
+
+                <label className="block text-sm font-semibold mb-2">
+
+
+                    Username
+
+
+                </label>
+
+
+
+
                 <input
 
-                    className="border p-3 w-full mb-3 rounded"
 
-                    placeholder="Username"
+
+                    className="border w-full p-3 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+
+
+
+                    placeholder="Enter username"
+
+
 
                     value={username}
 
+
+
                     onChange={e=>
 
-                        setUsername(e.target.value)
+                        setUsername(
+
+                            e.target.value
+
+                        )
 
                     }
 
+
+
                 />
+
+
+
+
+
+
+
+
+
+                <label className="block text-sm font-semibold mb-2">
+
+
+                    Password
+
+
+                </label>
+
+
+
 
 
 
 
                 <input
 
-                    className="border p-3 w-full mb-4 rounded"
+
+
+                    className="border w-full p-3 rounded-xl mb-6 focus:outline-none focus:ring-2 focus:ring-blue-400"
+
+
 
                     type="password"
 
-                    placeholder="Password"
+
+
+                    placeholder="Enter password"
+
+
 
                     value={password}
 
+
+
                     onChange={e=>
 
-                        setPassword(e.target.value)
+                        setPassword(
+
+                            e.target.value
+
+                        )
 
                     }
 
+
+
                 />
+
+
+
+
 
 
 
@@ -244,13 +441,47 @@ export default function Login(){
 
                 <button
 
-                    className="bg-blue-600 text-white p-3 w-full rounded"
+
+
+                    type="submit"
+
+
+
+                    disabled={loading}
+
+
+
+                    className="w-full bg-blue-600 text-white p-3 rounded-xl font-semibold hover:bg-blue-700 transition disabled:bg-gray-400"
+
+
 
                 >
 
-                    Login
+
+
+                    {
+
+
+                    loading
+
+                    ?
+
+                    "Signing in..."
+
+                    :
+
+                    "Login"
+
+
+                    }
+
+
 
                 </button>
+
+
+
+
 
 
 
@@ -258,7 +489,14 @@ export default function Login(){
             </form>
 
 
+
+
+
+
+
         </div>
+
+
 
     );
 

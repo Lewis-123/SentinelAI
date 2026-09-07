@@ -1,4 +1,11 @@
-import { useEffect, useState } from "react";
+import {
+    useEffect,
+    useState
+} from "react";
+
+
+
+import DashboardLayout from "./layout/DashboardLayout";
 
 
 import LocationAnalyzer from "./LocationAnalyzer";
@@ -18,15 +25,24 @@ import RiskHistory from "./dashboard/RiskHistory";
 
 
 
+
+
 interface LocationRisk {
+
 
     location:string;
 
+
     risk_level:string;
+
 
     risk_score:number;
 
+
 }
+
+
+
 
 
 
@@ -54,6 +70,7 @@ export default function Dashboard(){
 
 
 
+
     useEffect(()=>{
 
 
@@ -65,11 +82,13 @@ export default function Dashboard(){
             try{
 
 
+
                 const response = await fetch(
 
                     "http://127.0.0.1:8000/health"
 
                 );
+
 
 
 
@@ -110,10 +129,14 @@ export default function Dashboard(){
 
                 );
 
+
             }
 
 
+
         }
+
+
 
 
 
@@ -136,11 +159,13 @@ export default function Dashboard(){
 
 
 
+
                 const response = await fetch(
 
                     "http://127.0.0.1:8000/risk-map",
 
                     {
+
 
                         headers:{
 
@@ -152,6 +177,7 @@ export default function Dashboard(){
 
                         }
 
+
                     }
 
                 );
@@ -160,7 +186,10 @@ export default function Dashboard(){
 
 
 
+
                 const data = await response.json();
+
+
 
 
 
@@ -189,6 +218,8 @@ export default function Dashboard(){
 
 
 
+
+
                     setLocations(
 
                         sorted.slice(0,5)
@@ -197,6 +228,8 @@ export default function Dashboard(){
 
 
                 }
+
+
 
 
 
@@ -215,11 +248,13 @@ export default function Dashboard(){
                 );
 
 
+
             }
 
 
 
         }
+
 
 
 
@@ -233,45 +268,9 @@ export default function Dashboard(){
 
 
 
+
+
     },[]);
-
-
-
-
-
-
-
-
-
-    function riskColor(level:string){
-
-
-
-        if(level==="HIGH"){
-
-
-            return "text-red-600";
-
-
-        }
-
-
-
-        if(level==="MEDIUM"){
-
-
-            return "text-yellow-600";
-
-
-        }
-
-
-
-
-        return "text-green-600";
-
-
-    }
 
 
 
@@ -285,75 +284,93 @@ export default function Dashboard(){
 
 
 
-        <div className="min-h-screen bg-gray-100 p-6">
-
-
-
-
-
-            <div className="max-w-7xl mx-auto space-y-8">
+        <DashboardLayout>
 
 
 
 
 
 
-
-                {/* Header */}
-
-
-                <section className="bg-white rounded-xl shadow p-6">
-
-
-
-                    <h1 className="text-3xl font-bold">
-
-
-                        SentinelAI Operations Dashboard
-
-
-                    </h1>
-
-
-
-
-
-                    <p className="text-gray-600 mt-2">
-
-
-                        AI-powered environmental risk
-
-                        monitoring and early warning system
-
-
-                    </p>
+            <div className="space-y-8">
 
 
 
 
 
 
-                    <div className="mt-4">
 
-
-                        <span className="font-semibold">
-
-
-                            System Status:
-
-
-                        </span>
+                {/* System Overview */}
 
 
 
-
-                        <span className="ml-2 text-green-600 font-bold">
-
-
-                            🟢 {status}
+                <section className="bg-white rounded-2xl shadow-sm p-6">
 
 
-                        </span>
+
+                    <div className="flex justify-between items-center">
+
+
+
+
+
+                        <div>
+
+
+                            <h1 className="text-3xl font-bold text-gray-800">
+
+
+                                SentinelAI Operations Dashboard
+
+
+                            </h1>
+
+
+
+                            <p className="text-gray-500 mt-2">
+
+
+                                AI-powered environmental risk monitoring
+
+                                and early warning system
+
+
+                            </p>
+
+
+                        </div>
+
+
+
+
+
+
+                        <div className="hidden md:block">
+
+
+                            <span className="font-semibold">
+
+
+                                System:
+
+
+                            </span>
+
+
+
+                            <span className="ml-2 text-green-600 font-bold">
+
+
+                                🟢 {status}
+
+
+                            </span>
+
+
+
+                        </div>
+
+
+
 
 
 
@@ -371,7 +388,11 @@ export default function Dashboard(){
 
 
 
-                {/* Intelligence Widgets */}
+
+
+
+                {/* Intelligence Cards */}
+
 
 
                 <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -400,20 +421,51 @@ export default function Dashboard(){
 
 
 
+
+
+
+
                 {/* Highest Risk Locations */}
 
 
-                <section className="bg-white rounded-xl shadow p-6">
+
+                <section className="bg-white rounded-2xl shadow-sm p-6">
 
 
 
-                    <h2 className="text-2xl font-bold mb-4">
+                    <div className="flex justify-between mb-5">
 
 
-                        Highest Risk Locations
+
+                        <div>
 
 
-                    </h2>
+                            <h2 className="text-2xl font-bold">
+
+
+                                Highest Risk Locations
+
+
+                            </h2>
+
+
+
+                            <p className="text-gray-500">
+
+
+                                Areas requiring closest monitoring
+
+
+                            </p>
+
+
+                        </div>
+
+
+
+                    </div>
+
+
 
 
 
@@ -423,17 +475,20 @@ export default function Dashboard(){
 
                     {
 
-                        locations.length===0 && (
+                    locations.length===0 && (
 
 
-                            <p>
-
-                                No location risk data available.
-
-                            </p>
+                        <p className="text-gray-500">
 
 
-                        )
+                            No location risk data available.
+
+
+                        </p>
+
+
+                    )
+
 
                     }
 
@@ -443,105 +498,96 @@ export default function Dashboard(){
 
 
 
-                    <div className="space-y-4">
+
+                    <div className="space-y-3">
 
 
 
                     {
 
-                        locations.map(
 
-                            (item,index)=>(
+                    locations.map(
 
-
-                                <div
-
-                                    key={index}
-
-                                    className="flex justify-between items-center border-b pb-3"
-
-                                >
+                        (item,index)=>(
 
 
-
-                                    <div>
-
-
-                                        <span className="font-semibold">
+                            <div
 
 
-                                            {index+1}. {item.location}
+                            key={index}
 
 
-                                        </span>
+                            className="flex justify-between items-center border rounded-xl p-4 hover:bg-gray-50"
 
 
-
-                                    </div>
+                            >
 
 
 
 
+                                <div className="font-semibold">
 
 
-                                    <div className="text-right">
+                                    #{index+1}
+
+                                    {" "}
+
+                                    {item.location}
 
 
-
-                                        <div
-
-                                            className={
-
-                                                `font-bold ${
-
-                                                    riskColor(
-
-                                                        item.risk_level
-
-                                                    )
-
-                                                }`
-
-                                            }
-
-                                        >
-
-
-                                            {item.risk_level}
-
-
-                                        </div>
+                                </div>
 
 
 
 
-                                        <div>
 
 
-                                            {item.risk_score}/100
+                                <div className="text-right">
 
 
-                                        </div>
+                                    <div className="font-bold">
 
+
+                                        {item.risk_level}
 
 
                                     </div>
 
+
+
+
+                                    <div className="text-gray-500">
+
+
+                                        {item.risk_score}/100
+
+
+                                    </div>
 
 
 
                                 </div>
 
 
-                            )
+
+
+                            </div>
+
 
                         )
+
+
+                    )
+
 
                     }
 
 
 
+
+
                     </div>
+
 
 
 
@@ -556,11 +602,15 @@ export default function Dashboard(){
 
 
 
-                {/* Historical Analytics */}
 
 
-                <section className="bg-white rounded-xl shadow p-6">
 
+
+                {/* Prediction History */}
+
+
+
+                <section className="bg-white rounded-2xl shadow-sm p-6">
 
 
                     <RiskHistory />
@@ -576,11 +626,14 @@ export default function Dashboard(){
 
 
 
-                {/* Location Analysis */}
 
 
-                <section className="bg-white rounded-xl shadow p-6">
 
+                {/* AI Analyzer */}
+
+
+
+                <section className="bg-white rounded-2xl shadow-sm p-6">
 
 
                     <LocationAnalyzer />
@@ -596,11 +649,14 @@ export default function Dashboard(){
 
 
 
+
+
+
                 {/* GIS Map */}
 
 
-                <section className="bg-white rounded-xl shadow p-6">
 
+                <section className="bg-white rounded-2xl shadow-sm p-6">
 
 
                     <RiskMap />
@@ -620,7 +676,9 @@ export default function Dashboard(){
 
 
 
-        </div>
+
+
+        </DashboardLayout>
 
 
     );

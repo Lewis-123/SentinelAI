@@ -22,6 +22,8 @@ import ProtectedRoute from "./auth/ProtectedRoute";
 
 
 
+
+
 import Login from "./auth/Login";
 
 import Register from "./pages/Register";
@@ -30,7 +32,19 @@ import Landing from "./pages/Landing";
 
 
 
+
+
+import DashboardLayout from "./components/dashboard/DashboardLayout";
+
+
+
 import Dashboard from "./components/Dashboard";
+
+import RiskMap from "./components/RiskMap";
+
+import RiskHistory from "./components/dashboard/RiskHistory";
+
+import AlertPanel from "./components/dashboard/AlertPanel";
 
 
 
@@ -43,24 +57,44 @@ import Dashboard from "./components/Dashboard";
 export default function App(){
 
 
+
     return (
+
 
 
         <AuthProvider>
 
 
+
+
+
             <BrowserRouter>
+
+
+
 
 
                 <Routes>
 
 
 
-                    {/* Public Landing Page */}
+
+
+
+
+                    {/* =========================
+                        PUBLIC ROUTES
+                    ========================== */}
+
+
+
+
 
                     <Route
 
+
                         path="/"
+
 
                         element={
 
@@ -68,17 +102,22 @@ export default function App(){
 
                         }
 
+
                     />
 
 
 
 
 
-                    {/* Authentication */}
+
+
+
 
                     <Route
 
+
                         path="/login"
+
 
                         element={
 
@@ -86,7 +125,12 @@ export default function App(){
 
                         }
 
+
                     />
+
+
+
+
 
 
 
@@ -94,7 +138,9 @@ export default function App(){
 
                     <Route
 
+
                         path="/register"
+
 
                         element={
 
@@ -102,6 +148,7 @@ export default function App(){
 
                         }
 
+
                     />
 
 
@@ -111,11 +158,28 @@ export default function App(){
 
 
 
-                    {/* Protected Dashboard */}
+
+
+
+
+
+
+
+                    {/* =========================
+                        PROTECTED DASHBOARD AREA
+                    ========================== */}
+
+
+
+
 
                     <Route
 
+
+
                         path="/dashboard"
+
+
 
                         element={
 
@@ -123,7 +187,7 @@ export default function App(){
                             <ProtectedRoute>
 
 
-                                <Dashboard/>
+                                <DashboardLayout/>
 
 
                             </ProtectedRoute>
@@ -131,17 +195,147 @@ export default function App(){
 
                         }
 
-                    />
+
+
+                    >
 
 
 
 
 
-                    {/* Fallback */}
+
+                        {/* Default dashboard page */}
+
+
+
+                        <Route
+
+
+                            index
+
+
+                            element={
+
+                                <Dashboard/>
+
+                            }
+
+
+                        />
+
+
+
+
+
+
+
+
+                        {/* Risk Map */}
+
+
+
+                        <Route
+
+
+                            path="map"
+
+
+                            element={
+
+                                <RiskMap/>
+
+                            }
+
+
+                        />
+
+
+
+
+
+
+
+
+
+                        {/* Prediction History */}
+
+
+
+                        <Route
+
+
+                            path="history"
+
+
+                            element={
+
+                                <RiskHistory/>
+
+                            }
+
+
+                        />
+
+
+
+
+
+
+
+
+
+                        {/* Alerts */}
+
+
+
+                        <Route
+
+
+                            path="alerts"
+
+
+                            element={
+
+                                <AlertPanel/>
+
+                            }
+
+
+                        />
+
+
+
+
+
+
+                    </Route>
+
+
+
+
+
+
+
+
+
+
+
+
+                    {/* =========================
+                        FALLBACK
+                    ========================== */}
+
+
+
+
 
                     <Route
 
+
+
                         path="*"
+
+
 
                         element={
 
@@ -149,17 +343,32 @@ export default function App(){
 
                         }
 
+
+
                     />
+
+
+
+
 
 
 
                 </Routes>
 
 
+
+
+
+
+
             </BrowserRouter>
 
 
+
+
+
         </AuthProvider>
+
 
 
     );
