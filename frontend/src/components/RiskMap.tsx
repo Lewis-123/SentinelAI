@@ -1,3 +1,9 @@
+import { 
+    useEffect, 
+    useState 
+} from "react";
+
+
 import {
 
     MapContainer,
@@ -6,22 +12,200 @@ import {
 
     Marker,
 
-    Popup
+    Popup,
+
+    useMap
 
 } from "react-leaflet";
 
 
-import {
-
-    useEffect,
-
-    useState
-
-} from "react";
-
+import L from "leaflet";
 
 
 import "leaflet/dist/leaflet.css";
+
+
+
+
+
+
+
+type LocationRisk = {
+
+
+    location: string;
+
+
+    latitude: number;
+
+
+    longitude: number;
+
+
+    risk_level: string;
+
+
+    risk_score: number;
+
+
+    color: string;
+
+
+};
+
+
+
+
+
+
+
+
+function createRiskIcon(
+
+    level:string
+
+){
+
+
+    let color = "yellow";
+
+
+
+    if(level === "LOW"){
+
+        color = "green";
+
+    }
+
+
+
+    if(level === "HIGH"){
+
+        color = "red";
+
+    }
+
+
+
+
+
+    return L.divIcon({
+
+
+        className:"risk-marker",
+
+
+
+        html:
+
+
+        `
+
+        <div style="
+
+            width:22px;
+
+            height:22px;
+
+            background:${color};
+
+            border-radius:50%;
+
+            border:3px solid white;
+
+            box-shadow:0 0 8px rgba(0,0,0,.4);
+
+        "></div>
+
+        `,
+
+
+
+        iconSize:[25,25],
+
+
+
+        iconAnchor:[12,12]
+
+    });
+
+}
+
+
+
+
+
+
+
+
+
+function MapBounds({
+
+    locations
+
+}:{
+
+    locations:LocationRisk[]
+
+}){
+
+
+    const map = useMap();
+
+
+
+
+    useEffect(()=>{
+
+
+        if(locations.length === 0){
+
+            return;
+
+        }
+
+
+
+        const bounds = L.latLngBounds(
+
+
+            locations.map(item=>[
+
+                item.latitude,
+
+                item.longitude
+
+            ])
+
+        );
+
+
+
+        map.fitBounds(
+
+            bounds,
+
+            {
+
+                padding:[50,50]
+
+            }
+
+        );
+
+
+
+    },[locations,map]);
+
+
+
+
+    return null;
+
+}
+
+
+
 
 
 
@@ -32,56 +216,96 @@ export default function RiskMap(){
 
 
 
-    const [locations,setLocations] = useState<any[]>([]);
+    const [locations,setLocations] = useState<LocationRisk[]>([]);
+
+
+
+    const [loading,setLoading] = useState(true);
 
 
 
 
 
-    async function loadMap(){
-
-
-        const token = localStorage.getItem(
-
-            "token"
-
-        );
+    async function loadRiskMap(){
 
 
 
-        const response = await fetch(
-
-            "http://127.0.0.1:8000/risk-map",
-
-            {
+        try{
 
 
-                headers:{
+            const token = localStorage.getItem(
+
+                "token"
+
+            );
 
 
-                    Authorization:
 
-                    `Bearer ${token}`
+            const response = await fetch(
+
+                "http://127.0.0.1:8000/risk-map",
+
+                {
+
+
+                    headers:{
+
+
+                        Authorization:
+
+                        `Bearer ${token}`
+
+
+                    }
 
 
                 }
 
-
-            }
-
-        );
+            );
 
 
 
-        const data = await response.json();
+
+
+            const data = await response.json();
 
 
 
-        setLocations(
 
-            data.locations || []
 
-        );
+            setLocations(
+
+                data.locations || []
+
+            );
+
+
+
+        }
+
+
+        catch(error){
+
+
+            console.error(
+
+                "Risk map loading failed",
+
+                error
+
+            );
+
+
+        }
+
+
+        finally{
+
+
+            setLoading(false);
+
+
+        }
 
 
     }
@@ -95,7 +319,22 @@ export default function RiskMap(){
     useEffect(()=>{
 
 
-        loadMap();
+        loadRiskMap();
+
+
+
+        const timer = setInterval(
+
+            loadRiskMap,
+
+            30000
+
+        );
+
+
+
+        return ()=>clearInterval(timer);
+
 
 
     },[]);
@@ -106,26 +345,68 @@ export default function RiskMap(){
 
 
 
+
+
     return (
 
+        <div
 
-        <div className="h-[500px]">
+            className="card"
+
+        >
+
+
+
+            <h2>
+
+                SentinelAI Risk Intelligence Map
+
+            </h2>
+
+
+
+
+
+            {loading && (
+
+                <p>
+
+                    Loading risk locations...
+
+                </p>
+
+            )}
+
+
+
+
+
 
 
             <MapContainer
 
 
-                center={[0.0236,37.9062]}
+                center={[
+
+                    -0.0236,
+
+                    37.9062
+
+                ]}
+
 
 
                 zoom={6}
 
 
+
                 style={{
 
-                    height:"100%",
+                    height:"550px",
 
-                    width:"100%"
+                    width:"100%",
+
+                    borderRadius:"12px"
 
                 }}
 
@@ -134,10 +415,19 @@ export default function RiskMap(){
 
 
 
+
+
                 <TileLayer
 
 
-                    url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    url=
+
+                    "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+
+
+                    attribution=
+
+                    "&copy; OpenStreetMap contributors"
 
 
                 />
@@ -146,70 +436,170 @@ export default function RiskMap(){
 
 
 
-                {locations.map(
-
-                    (item)=>
 
 
-                    <Marker
+                <MapBounds
 
+                    locations={locations}
 
-                        key={item.location}
-
-
-                        position={[
-
-                            item.latitude,
-
-                            item.longitude
-
-                        ]}
-
-
-                    >
-
-
-                        <Popup>
-
-
-                            <h3>
-
-                                {item.location}
-
-                            </h3>
+                />
 
 
 
-                            <p>
-
-                                Risk:
-
-                                {" "}
-
-                                {item.risk_level}
-
-                            </p>
 
 
 
-                            <p>
-
-                                Score:
-
-                                {" "}
-
-                                {item.risk_score}/100
-
-                            </p>
 
 
-                        </Popup>
+                {
+
+                    locations.map(
+
+                        item=>(
 
 
-                    </Marker>
+                            <Marker
 
 
-                )}
+                                key={item.location}
+
+
+                                position={[
+
+                                    item.latitude,
+
+                                    item.longitude
+
+                                ]}
+
+
+
+                                icon={
+
+                                    createRiskIcon(
+
+                                        item.risk_level
+
+                                    )
+
+                                }
+
+
+                            >
+
+
+
+                                <Popup>
+
+
+
+                                    <div>
+
+
+                                        <h3>
+
+
+                                            🇰🇪 {item.location}
+
+
+                                        </h3>
+
+
+
+
+                                        <p>
+
+
+                                            Risk Level:
+
+
+                                            <strong>
+
+                                                {" "}
+
+                                                {item.risk_level}
+
+                                            </strong>
+
+
+                                        </p>
+
+
+
+
+
+                                        <p>
+
+
+                                            Risk Score:
+
+
+                                            <strong>
+
+                                                {" "}
+
+                                                {item.risk_score}/100
+
+                                            </strong>
+
+
+                                        </p>
+
+
+
+
+
+                                        <p>
+
+
+                                            Coordinates:
+
+
+                                            <br/>
+
+
+                                            {item.latitude},
+
+                                            {" "}
+
+                                            {item.longitude}
+
+
+                                        </p>
+
+
+
+
+                                        <p>
+
+
+                                            SentinelAI Monitoring
+
+
+                                        </p>
+
+
+
+                                    </div>
+
+
+                                </Popup>
+
+
+
+
+
+
+                            </Marker>
+
+
+                        )
+
+                    )
+
+                }
+
+
 
 
 
@@ -219,10 +609,61 @@ export default function RiskMap(){
 
 
 
+
+
+
+            <div
+
+                style={{
+
+                    marginTop:"15px"
+
+                }}
+
+            >
+
+
+                <span>
+
+                    🟢 Low Risk
+
+                </span>
+
+
+
+                {"  "}
+
+
+
+                <span>
+
+                    🟡 Medium Risk
+
+                </span>
+
+
+
+                {"  "}
+
+
+
+                <span>
+
+                    🔴 High Risk
+
+                </span>
+
+
+
+            </div>
+
+
+
+
+
+
         </div>
 
-
     );
-
 
 }
