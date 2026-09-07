@@ -1,13 +1,22 @@
 import {
-    ReactNode,
     useState
+} from "react";
+
+
+import type {
+    ReactNode
 } from "react";
 
 
 import {
     Link,
-    useNavigate
+    useNavigate,
+    useLocation
 } from "react-router-dom";
+
+
+
+
 
 
 
@@ -23,19 +32,28 @@ interface Props {
 
 
 
+
+
+
 export default function DashboardLayout({
 
     children
 
-}:Props){
+}: Props){
 
 
 
     const navigate = useNavigate();
 
 
+    const location = useLocation();
+
+
+
 
     const [mobileOpen,setMobileOpen] = useState(false);
+
+
 
 
 
@@ -53,7 +71,44 @@ export default function DashboardLayout({
 
 
 
+
+
+    function getInitials(
+
+        name:string
+
+    ){
+
+
+        return name
+
+        .split(" ")
+
+        .map(
+
+            word => word.charAt(0)
+
+        )
+
+        .join("")
+
+        .substring(0,2)
+
+        .toUpperCase();
+
+
+    }
+
+
+
+
+
+
+
+
+
     function logout(){
+
 
 
         localStorage.removeItem(
@@ -70,10 +125,89 @@ export default function DashboardLayout({
         );
 
 
-        navigate("/login");
+        navigate(
+
+            "/login"
+
+        );
 
 
     }
+
+
+
+
+
+
+
+
+
+    function closeMenu(){
+
+
+        setMobileOpen(false);
+
+
+    }
+
+
+
+
+
+
+
+
+
+    const menuItems = [
+
+
+
+        {
+
+            name:"Dashboard",
+
+            path:"/dashboard",
+
+            icon:"🏠"
+
+        },
+
+
+        {
+
+            name:"Risk Map",
+
+            path:"/dashboard/map",
+
+            icon:"🗺️"
+
+        },
+
+
+        {
+
+            name:"Alerts",
+
+            path:"/dashboard/alerts",
+
+            icon:"🚨"
+
+        },
+
+
+        {
+
+            name:"History",
+
+            path:"/dashboard/history",
+
+            icon:"📊"
+
+        }
+
+
+
+    ];
 
 
 
@@ -87,6 +221,7 @@ export default function DashboardLayout({
 
 
 
+
         <div className="min-h-screen bg-gray-100">
 
 
@@ -95,10 +230,12 @@ export default function DashboardLayout({
 
 
 
-            {/* Top Navbar */}
+            {/* Top Navigation Bar */}
 
 
-            <header className="fixed top-0 left-0 right-0 h-16 bg-white shadow z-50 flex items-center justify-between px-6">
+            <header className="fixed top-0 left-0 right-0 h-16 bg-white shadow-md z-50 flex items-center justify-between px-5">
+
+
 
 
 
@@ -107,13 +244,14 @@ export default function DashboardLayout({
                 <div className="flex items-center gap-4">
 
 
+
                     <button
 
 
-                    className="md:hidden text-2xl"
+                        onClick={()=>setMobileOpen(!mobileOpen)}
 
 
-                    onClick={()=>setMobileOpen(!mobileOpen)}
+                        className="md:hidden text-2xl"
 
 
                     >
@@ -127,13 +265,31 @@ export default function DashboardLayout({
 
 
 
-                    <h1 className="text-xl font-bold text-blue-700">
 
 
-                        SentinelAI
+
+                    <div>
 
 
-                    </h1>
+                        <h1 className="text-xl font-bold text-blue-700">
+
+
+                            SentinelAI
+
+
+                        </h1>
+
+
+                        <p className="text-xs text-gray-500 hidden sm:block">
+
+
+                            Environmental Risk Intelligence Platform
+
+
+                        </p>
+
+
+                    </div>
 
 
 
@@ -147,13 +303,44 @@ export default function DashboardLayout({
 
 
 
-                <div className="flex items-center gap-5">
+
+
+
+                <div className="flex items-center gap-4">
 
 
 
 
 
-                    <div className="text-right hidden sm:block">
+
+                    {/* User Avatar */}
+
+
+                    <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
+
+
+                        {
+
+                        getInitials(
+
+                            username
+
+                        )
+
+                        }
+
+
+                    </div>
+
+
+
+
+
+
+
+
+
+                    <div className="hidden md:block text-right">
 
 
                         <p className="font-semibold">
@@ -163,6 +350,7 @@ export default function DashboardLayout({
 
 
                         </p>
+
 
 
                         <p className="text-xs text-gray-500">
@@ -182,13 +370,15 @@ export default function DashboardLayout({
 
 
 
+
+
                     <button
 
 
-                    onClick={logout}
+                        onClick={logout}
 
 
-                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition"
 
 
                     >
@@ -209,7 +399,49 @@ export default function DashboardLayout({
 
 
 
+
+
             </header>
+
+
+
+
+
+
+
+
+
+
+
+
+
+            {/* Mobile Background Overlay */}
+
+
+            {
+
+
+            mobileOpen && (
+
+
+
+                <div
+
+
+                    onClick={closeMenu}
+
+
+                    className="fixed inset-0 bg-black/40 z-30 md:hidden"
+
+
+                />
+
+
+            )
+
+
+            }
+
 
 
 
@@ -227,23 +459,33 @@ export default function DashboardLayout({
             <aside
 
 
-            className={`fixed top-16 left-0 h-full w-64 bg-slate-900 text-white p-5 transition-transform z-40
 
-            ${
+                className={`fixed top-16 left-0 h-full w-64 bg-slate-900 text-white p-5 z-40 transition-transform duration-300
 
-                mobileOpen
 
-                ?
+                ${
 
-                "translate-x-0"
 
-                :
+                    mobileOpen
 
-                "-translate-x-full md:translate-x-0"
 
-            }
+                    ?
 
-            `}
+
+                    "translate-x-0"
+
+
+                    :
+
+
+                    "-translate-x-full md:translate-x-0"
+
+
+                }
+
+
+                `}
+
 
 
             >
@@ -254,57 +496,30 @@ export default function DashboardLayout({
 
 
 
-                <nav className="space-y-3">
+
+                <div className="mb-6">
+
+
+                    <h2 className="text-lg font-bold">
+
+
+                        SentinelAI Menu
+
+
+                    </h2>
 
 
 
-                    <Link
-
-                    to="/dashboard"
-
-                    className="block p-3 rounded-lg hover:bg-slate-700"
-
-                    >
-
-                        🏠 Dashboard
-
-                    </Link>
+                    <p className="text-sm text-slate-400">
 
 
+                        Risk Monitoring System
 
 
+                    </p>
 
 
-
-                    <Link
-
-                    to="/dashboard/map"
-
-                    className="block p-3 rounded-lg hover:bg-slate-700"
-
-                    >
-
-                        🗺 Risk Map
-
-                    </Link>
-
-
-
-
-
-
-
-                    <Link
-
-                    to="/dashboard/alerts"
-
-                    className="block p-3 rounded-lg hover:bg-slate-700"
-
-                    >
-
-                        🚨 Alerts
-
-                    </Link>
+                </div>
 
 
 
@@ -313,24 +528,103 @@ export default function DashboardLayout({
 
 
 
-                    <Link
 
-                    to="/dashboard/history"
-
-                    className="block p-3 rounded-lg hover:bg-slate-700"
-
-                    >
-
-                        📊 History
-
-                    </Link>
+                <nav className="space-y-2">
 
 
 
+                {
+
+
+                    menuItems.map(item=>(
+
+
+
+                        <Link
+
+
+
+                            key={item.path}
+
+
+
+                            to={item.path}
+
+
+
+                            onClick={closeMenu}
+
+
+
+
+                            className={`flex items-center gap-3 p-3 rounded-lg transition
+
+
+                            ${
+
+
+                                location.pathname === item.path
+
+
+                                ?
+
+
+                                "bg-blue-600"
+
+
+                                :
+
+
+                                "hover:bg-slate-700"
+
+
+                            }
+
+
+                            `}
+
+
+
+                        >
+
+
+
+
+                            <span>
+
+
+                                {item.icon}
+
+
+                            </span>
+
+
+
+
+                            <span>
+
+
+                                {item.name}
+
+
+                            </span>
+
+
+
+
+
+                        </Link>
+
+
+                    ))
+
+
+                }
 
 
 
                 </nav>
+
 
 
 
@@ -351,10 +645,10 @@ export default function DashboardLayout({
 
 
 
-            {/* Main Content */}
+            {/* Dashboard Content */}
 
 
-            <main className="pt-20 md:ml-64 p-6">
+            <main className="pt-20 md:ml-64 p-5 md:p-8">
 
 
 
@@ -363,6 +657,7 @@ export default function DashboardLayout({
 
 
             </main>
+
 
 
 
