@@ -1,30 +1,148 @@
-import requests
+import random
 
 
 
-def get_ndvi_data(
+
+
+
+# =====================================
+# Simulated Satellite Environmental Data
+# =====================================
+
+
+def fetch_satellite_data(
+
     latitude,
+
     longitude
+
 ):
 
 
     """
-    Placeholder for satellite vegetation data.
+    Simulated satellite environmental connector.
 
-    Future integration:
+    Current MVP implementation.
+
+    Future integrations:
+
     - Sentinel-2
     - MODIS
-    - NASA EarthData
+    - Google Earth Engine
+
+
+    Returns:
+
+    ndvi
+    rainfall
+    rainfall anomaly
 
     """
 
 
+
+
+
+    # =====================================
+    # Vegetation Index (NDVI)
+    # =====================================
+
+
+    ndvi = round(
+
+        random.uniform(
+
+            0.2,
+
+            0.9
+
+        ),
+
+        2
+
+    )
+
+
+
+
+
+
+
+    # =====================================
+    # Simulated Rainfall
+    # =====================================
+
+
+    rainfall = round(
+
+        random.uniform(
+
+            0,
+
+            200
+
+        ),
+
+        2
+
+    )
+
+
+
+
+
+
+
+
+    # =====================================
+    # Rainfall Anomaly
+    # =====================================
+
+
+    rainfall_anomaly = round(
+
+        random.uniform(
+
+            -50,
+
+            50
+
+        ),
+
+        2
+
+    )
+
+
+
+
+
+
+
+
+
     return {
 
-        "latitude": latitude,
 
-        "longitude": longitude,
+        "ndvi":
 
-        "ndvi": 0.45
+        ndvi,
+
+
+
+
+
+        "rainfall":
+
+        rainfall,
+
+
+
+
+
+        "rainfall_anomaly":
+
+        rainfall_anomaly
+
 
     }

@@ -24,6 +24,8 @@ MODEL_PATH = os.path.join(
 
 
 
+
+
 # =====================================
 # Expected ML Features
 # =====================================
@@ -61,7 +63,7 @@ _model = None
 
 
 # =====================================
-# Load Machine Learning Model
+# Load ML Model
 # =====================================
 
 def load_model():
@@ -85,24 +87,11 @@ def load_model():
 
 
 
-        try:
+        _model = joblib.load(
 
+            MODEL_PATH
 
-            _model = joblib.load(
-
-                MODEL_PATH
-
-            )
-
-
-        except Exception as e:
-
-
-            raise Exception(
-
-                f"Unable to load ML model: {str(e)}"
-
-            )
+        )
 
 
 
@@ -115,14 +104,10 @@ def load_model():
 
 
 # =====================================
-# Prepare Input Features
+# Prepare ML Features
 # =====================================
 
-def prepare_features(
-
-    features: dict
-
-):
+def prepare_features(features:dict):
 
 
     data = {}
@@ -132,7 +117,7 @@ def prepare_features(
     for column in FEATURE_COLUMNS:
 
 
-        value = features.get(
+        data[column] = features.get(
 
             column,
 
@@ -141,13 +126,8 @@ def prepare_features(
         )
 
 
-        data[column] = value
 
-
-
-
-
-    dataframe = pd.DataFrame(
+    return pd.DataFrame(
 
         [data],
 
@@ -157,7 +137,308 @@ def prepare_features(
 
 
 
-    return dataframe
+
+
+
+
+
+
+# =====================================
+# Dynamic Environmental Risk Score
+# =====================================
+
+def calculate_risk_score(features):
+
+
+    score = 40
+
+
+
+
+
+    temperature = features.get(
+
+        "temperature",
+
+        25
+
+    )
+
+
+
+    rainfall = features.get(
+
+        "rainfall",
+
+        0
+
+    )
+
+
+
+    humidity = features.get(
+
+        "humidity",
+
+        50
+
+    )
+
+
+
+    ndvi = features.get(
+
+        "ndvi",
+
+        0.5
+
+    )
+
+
+
+    rainfall_anomaly = features.get(
+
+        "rainfall_anomaly",
+
+        0
+
+    )
+
+
+
+    density = features.get(
+
+        "density",
+
+        0
+
+    )
+
+
+
+    poverty_rate = features.get(
+
+        "poverty_rate",
+
+        0
+
+    )
+
+
+
+
+
+
+
+    # =========================
+    # Temperature Stress
+    # =========================
+
+    if temperature >= 38:
+
+
+        score += 15
+
+
+
+    elif temperature >= 32:
+
+
+        score += 8
+
+
+
+
+
+
+
+    # =========================
+    # Rainfall Risk
+    # =========================
+
+    if rainfall >= 180:
+
+
+        score += 15
+
+
+
+    elif rainfall <= 20:
+
+
+        score += 10
+
+
+
+
+
+
+
+    # =========================
+    # Humidity / Flood Conditions
+    # =========================
+
+    if humidity >= 85:
+
+
+        score += 8
+
+
+
+
+
+
+
+    # =========================
+    # Vegetation Condition
+    # =========================
+
+    if ndvi < 0.25:
+
+
+        score += 15
+
+
+
+    elif ndvi < 0.4:
+
+
+        score += 8
+
+
+
+    elif ndvi > 0.7:
+
+
+        score -= 5
+
+
+
+
+
+
+
+    # =========================
+    # Rainfall Anomaly
+    # =========================
+
+    if rainfall_anomaly <= -30:
+
+
+        score += 12
+
+
+
+    elif rainfall_anomaly >= 30:
+
+
+        score += 8
+
+
+
+
+
+
+
+    # =========================
+    # Population Vulnerability
+    # =========================
+
+    if density >= 5000:
+
+
+        score += 10
+
+
+
+    elif density >= 1000:
+
+
+        score += 5
+
+
+
+
+
+
+
+    # =========================
+    # Poverty Vulnerability
+    # =========================
+
+    if poverty_rate >= 40:
+
+
+        score += 10
+
+
+
+    elif poverty_rate >= 20:
+
+
+        score += 5
+
+
+
+
+
+
+
+    return round(
+
+        max(
+
+            0,
+
+            min(
+
+                score,
+
+                100
+
+            )
+
+        ),
+
+        2
+
+    )
+
+
+
+
+
+
+
+
+
+# =====================================
+# Convert Score To Risk Category
+# =====================================
+
+def score_to_level(score):
+
+
+    if score < 35:
+
+
+        return "LOW"
+
+
+
+    elif score < 65:
+
+
+        return "MEDIUM"
+
+
+
+    else:
+
+
+        return "HIGH"
+
+
 
 
 
@@ -171,7 +452,7 @@ def prepare_features(
 
 def predict_risk(
 
-    features: dict,
+    features:dict,
 
     db=None
 
@@ -192,11 +473,15 @@ def predict_risk(
 
 
 
+    # ML prediction
+
     prediction = model.predict(
 
         dataframe
 
     )[0]
+
+
 
 
 
@@ -213,6 +498,7 @@ def predict_risk(
         "predict_proba"
 
     ):
+
 
 
         probabilities = model.predict_proba(
@@ -242,10 +528,10 @@ def predict_risk(
 
 
 
-    # Convert model output
 
-    # into SentinelAI risk levels
 
+
+    # Convert ML output
 
     if isinstance(
 
@@ -256,27 +542,24 @@ def predict_risk(
     ):
 
 
-        risk_level = prediction.upper()
+        model_level = prediction.upper()
 
 
 
     else:
 
 
-        risk_mapping = {
+        model_level = {
 
 
-            0: "LOW",
+            0:"LOW",
 
-            1: "MEDIUM",
+            1:"MEDIUM",
 
-            2: "HIGH"
-
-        }
+            2:"HIGH"
 
 
-
-        risk_level = risk_mapping.get(
+        }.get(
 
             int(prediction),
 
@@ -289,27 +572,82 @@ def predict_risk(
 
 
 
-    # Assign readable score
-
-
-    score_mapping = {
-
-
-        "LOW": 30,
-
-        "MEDIUM": 65,
-
-        "HIGH": 90
-
-    }
 
 
 
-    risk_score = score_mapping.get(
 
-        risk_level,
 
-        50
+    # Environmental score
+
+    environmental_score = calculate_risk_score(
+
+        features
+
+    )
+
+
+
+
+
+
+
+    # Combine ML and environmental intelligence
+
+    final_score = environmental_score
+
+
+
+
+
+    # Slight adjustment based on model
+
+    if model_level == "HIGH":
+
+
+        final_score += 5
+
+
+
+    elif model_level == "LOW":
+
+
+        final_score -= 5
+
+
+
+
+
+
+
+    final_score = round(
+
+        max(
+
+            0,
+
+            min(
+
+                final_score,
+
+                100
+
+            )
+
+        ),
+
+        2
+
+    )
+
+
+
+
+
+
+
+    risk_level = score_to_level(
+
+        final_score
 
     )
 
@@ -330,12 +668,18 @@ def predict_risk(
 
         "risk_score":
 
-        risk_score,
+        final_score,
 
 
 
         "confidence":
 
-        confidence
+        confidence,
+
+
+
+        "features":
+
+        features
 
     }

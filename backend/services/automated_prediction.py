@@ -1,41 +1,38 @@
-from backend.connectors import (
-
-    fetch_weather,
-
-    fetch_satellite_data,
-
-    fetch_population_data,
-
-    fetch_vulnerability_data
-
+from backend.connectors.weather_connector import (
+    fetch_weather
 )
 
 
+from backend.connectors.satellite_connector import (
+    fetch_satellite_data
+)
+
+
+from backend.connectors.population_connector import (
+    fetch_population_data
+)
+
+
+from backend.connectors.vulnerability_connector import (
+    fetch_vulnerability_data
+)
 from backend.services.prediction import (
-
     predict_risk
-
 )
 
 
 from backend.services.location import (
-
     save_location_risk
-
 )
 
 
 from backend.services.history import (
-
     save_prediction_history
-
 )
 
 
 from backend.services.alerts import (
-
     create_alert_if_needed
-
 )
 
 
@@ -43,11 +40,8 @@ from backend.database.models import LocationRisk
 
 
 from backend.data.kenya_locations import (
-
     get_location_coordinates
-
 )
-
 
 
 
@@ -66,7 +60,7 @@ def predict_location_risk(
 
 
     """
-    Complete Kenya-wide environmental risk pipeline.
+    Complete Kenya environmental risk pipeline.
 
     Flow:
 
@@ -78,12 +72,9 @@ def predict_location_risk(
         ↓
     AI Prediction
         ↓
-    Alert Detection
+    Database Storage
         ↓
-    Location Update
-        ↓
-    Prediction History
-
+    Dashboard
     """
 
 
@@ -108,7 +99,7 @@ def predict_location_risk(
 
         raise Exception(
 
-            f"Location '{city}' not found."
+            f"Location '{city}' not found"
 
         )
 
@@ -126,10 +117,8 @@ def predict_location_risk(
 
 
 
-
-
     # =====================================
-    # Previous Risk Check
+    # Previous Risk
     # =====================================
 
 
@@ -165,7 +154,7 @@ def predict_location_risk(
 
 
     # =====================================
-    # Collect Environmental Data
+    # Environmental Data
     # =====================================
 
 
@@ -174,7 +163,6 @@ def predict_location_risk(
         location["name"]
 
     )
-
 
 
 
@@ -188,15 +176,11 @@ def predict_location_risk(
 
 
 
-
-
     population = fetch_population_data(
 
         location["name"]
 
     )
-
-
 
 
 
@@ -343,12 +327,24 @@ def predict_location_risk(
 
 
 
+    # IMPORTANT:
+    # Attach environmental data
+    # for history and map display
+
+
+    prediction["features"] = features
+
+
+
+
+
+
 
 
 
 
     # =====================================
-    # Generate Alert If Risk Increased
+    # Alert Generation
     # =====================================
 
 
@@ -427,7 +423,7 @@ def predict_location_risk(
 
 
     # =====================================
-    # Response
+    # API Response
     # =====================================
 
 
@@ -507,6 +503,5 @@ def predict_location_risk(
         "features":
 
         features
-
 
     }

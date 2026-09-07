@@ -137,9 +137,16 @@ def risk_map(
     try:
 
 
+
         locations = (
 
             db.query(LocationRisk)
+
+            .order_by(
+
+                LocationRisk.risk_score.desc()
+
+            )
 
             .all()
 
@@ -147,11 +154,16 @@ def risk_map(
 
 
 
+
+
         markers = []
 
 
 
+
+
         for item in locations:
+
 
 
 
@@ -174,6 +186,9 @@ def risk_map(
                 .first()
 
             )
+
+
+
 
 
 
@@ -202,69 +217,117 @@ def risk_map(
 
 
 
+
             markers.append({
 
 
-                "location": item.location,
+                "location":
+
+                item.location,
 
 
-                "latitude": item.latitude,
+
+                "latitude":
+
+                item.latitude,
 
 
-                "longitude": item.longitude,
+
+                "longitude":
+
+                item.longitude,
 
 
-                "risk_level": item.risk_level,
+
+                "risk_level":
+
+                item.risk_level,
 
 
-                "risk_score": item.risk_score,
+
+                "risk_score":
+
+                item.risk_score,
 
 
-                "color": color,
+
+                "color":
+
+                color,
+
+
+
 
 
 
                 "temperature":
 
-                    latest_prediction.temperature
+                latest_prediction.temperature
 
-                    if latest_prediction else None,
+                if latest_prediction and latest_prediction.temperature is not None
+
+                else 0,
+
+
+
 
 
 
                 "rainfall":
 
-                    latest_prediction.rainfall
+                latest_prediction.rainfall
 
-                    if latest_prediction else None,
+                if latest_prediction and latest_prediction.rainfall is not None
+
+                else 0,
+
+
+
 
 
 
                 "humidity":
 
-                    latest_prediction.humidity
+                latest_prediction.humidity
 
-                    if latest_prediction else None,
+                if latest_prediction and latest_prediction.humidity is not None
+
+                else 0,
+
+
+
 
 
 
                 "ndvi":
 
-                    latest_prediction.ndvi
+                latest_prediction.ndvi
 
-                    if latest_prediction else None,
+                if latest_prediction and latest_prediction.ndvi is not None
+
+                else 0,
+
+
+
 
 
 
                 "confidence":
 
-                    latest_prediction.confidence
+                latest_prediction.confidence
 
-                    if latest_prediction else None,
+                if latest_prediction and latest_prediction.confidence is not None
+
+                else 0,
 
 
 
-                "updated_at": item.updated_at
+
+
+
+                "updated_at":
+
+                item.updated_at
 
 
             })
@@ -272,12 +335,21 @@ def risk_map(
 
 
 
+
+
+
         return {
 
 
-            "locations": markers
+            "locations":
+
+            markers
+
 
         }
+
+
+
 
 
 
@@ -321,17 +393,24 @@ def prediction_history(
 
         records = (
 
+
             db.query(RiskPrediction)
 
+
             .order_by(
+
 
                 RiskPrediction.created_at.desc()
 
             )
 
+
             .all()
 
+
         )
+
+
 
 
 
@@ -341,33 +420,53 @@ def prediction_history(
             "history":[
 
 
+
                 {
 
 
-                    "location": item.location,
+                    "location":
+
+                    item.location,
 
 
-                    "risk_level": item.risk_level,
+
+                    "risk_level":
+
+                    item.risk_level,
 
 
-                    "risk_score": item.risk_score,
+
+                    "risk_score":
+
+                    item.risk_score,
 
 
-                    "confidence": item.confidence,
+
+                    "confidence":
+
+                    item.confidence,
 
 
-                    "created_at": item.created_at
+
+                    "created_at":
+
+                    item.created_at
 
 
                 }
 
 
+
                 for item in records
+
 
 
             ]
 
         }
+
+
+
 
 
 
@@ -411,7 +510,9 @@ def get_alerts(
 
         alerts = (
 
+
             db.query(Alert)
+
 
             .filter(
 
@@ -419,17 +520,23 @@ def get_alerts(
 
             )
 
+
             .order_by(
 
                 Alert.created_at.desc()
 
             )
 
+
             .limit(20)
+
 
             .all()
 
+
         )
+
+
 
 
 
@@ -439,39 +546,65 @@ def get_alerts(
             "alerts":[
 
 
+
                 {
 
 
-                    "id": alert.id,
+                    "id":
+
+                    alert.id,
 
 
-                    "location": alert.location,
+
+                    "location":
+
+                    alert.location,
 
 
-                    "previous_risk": alert.previous_risk,
+
+                    "previous_risk":
+
+                    alert.previous_risk,
 
 
-                    "current_risk": alert.current_risk,
+
+                    "current_risk":
+
+                    alert.current_risk,
 
 
-                    "risk_score": alert.risk_score,
+
+                    "risk_score":
+
+                    alert.risk_score,
 
 
-                    "message": alert.message,
+
+                    "message":
+
+                    alert.message,
 
 
-                    "created_at": alert.created_at
+
+                    "created_at":
+
+                    alert.created_at
 
 
                 }
 
 
+
                 for alert in alerts
+
 
 
             ]
 
         }
+
+
+
 
 
 
@@ -515,18 +648,23 @@ def highest_risk_locations(
 
         db.query(LocationRisk)
 
+
         .order_by(
 
             LocationRisk.risk_score.desc()
 
         )
 
+
         .limit(10)
+
 
         .all()
 
 
     )
+
+
 
 
 
@@ -536,31 +674,51 @@ def highest_risk_locations(
         "locations":[
 
 
+
             {
 
 
-                "location": item.location,
+                "location":
+
+                item.location,
 
 
-                "risk_level": item.risk_level,
+
+                "risk_level":
+
+                item.risk_level,
 
 
-                "risk_score": item.risk_score,
+
+                "risk_score":
+
+                item.risk_score,
 
 
-                "latitude": item.latitude,
+
+                "latitude":
+
+                item.latitude,
 
 
-                "longitude": item.longitude,
+
+                "longitude":
+
+                item.longitude,
 
 
-                "updated_at": item.updated_at
+
+                "updated_at":
+
+                item.updated_at
 
 
             }
 
 
+
             for item in locations
+
 
 
         ]
@@ -593,7 +751,9 @@ def risk_trend(
 
     predictions = (
 
+
         db.query(RiskPrediction)
+
 
         .order_by(
 
@@ -601,11 +761,16 @@ def risk_trend(
 
         )
 
+
         .limit(10)
+
 
         .all()
 
+
     )
+
+
 
 
 
@@ -615,28 +780,45 @@ def risk_trend(
         "trend":[
 
 
+
             {
 
 
-                "location": item.location,
+                "location":
+
+                item.location,
 
 
-                "risk_level": item.risk_level,
+
+                "risk_level":
+
+                item.risk_level,
 
 
-                "risk_score": item.risk_score,
+
+                "risk_score":
+
+                item.risk_score,
 
 
-                "confidence": item.confidence,
+
+                "confidence":
+
+                item.confidence,
 
 
-                "date": item.created_at
+
+                "date":
+
+                item.created_at
 
 
             }
 
 
+
             for item in reversed(predictions)
+
 
 
         ]
@@ -669,31 +851,47 @@ def available_locations(
 
 
 
+
+
     return {
 
 
         "locations":[
 
 
+
             {
 
 
-                "name": value["name"],
+                "name":
+
+                value["name"],
 
 
-                "county": value["county"],
+
+                "county":
+
+                value["county"],
 
 
-                "latitude": value["latitude"],
+
+                "latitude":
+
+                value["latitude"],
 
 
-                "longitude": value["longitude"]
+
+                "longitude":
+
+                value["longitude"]
 
 
             }
 
 
+
             for value in KENYA_LOCATIONS.values()
+
 
 
         ]
