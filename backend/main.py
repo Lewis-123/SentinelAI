@@ -1,12 +1,19 @@
+import os
+
+
 from fastapi import FastAPI
+
 
 from fastapi.middleware.cors import CORSMiddleware
 
 
 
+
 from backend.database.database import engine
 
+
 from backend.database.models import Base
+
 
 
 
@@ -24,9 +31,44 @@ from backend.monitoring.scheduler import start_scheduler
 
 
 
+
+
 # =====================================
-# Initialize Database Tables
+# Environment Configuration
 # =====================================
+
+
+FRONTEND_URL = os.getenv(
+
+    "FRONTEND_URL",
+
+    "http://localhost:5173"
+
+)
+
+
+
+
+
+ENVIRONMENT = os.getenv(
+
+    "ENVIRONMENT",
+
+    "development"
+
+)
+
+
+
+
+
+
+
+
+# =====================================
+# Initialize Database
+# =====================================
+
 
 Base.metadata.create_all(
 
@@ -38,21 +80,32 @@ Base.metadata.create_all(
 
 
 
+
+
+
+
+
 # =====================================
-# Create Application
+# Create FastAPI Application
 # =====================================
+
 
 app = FastAPI(
 
+
     title="SentinelAI",
+
 
     description=(
 
         "AI-powered environmental "
 
-        "risk early warning platform"
+        "risk early warning platform "
+
+        "for Kenya"
 
     ),
+
 
     version="1.0.0"
 
@@ -62,27 +115,44 @@ app = FastAPI(
 
 
 
+
+
+
+
 # =====================================
 # CORS Configuration
 # =====================================
 
+
 app.add_middleware(
+
 
     CORSMiddleware,
 
+
     allow_origins=[
+
+
+        FRONTEND_URL,
+
 
         "http://localhost:5173",
 
+
         "http://127.0.0.1:5173"
+
 
     ],
 
+
     allow_credentials=True,
+
 
     allow_methods=["*"],
 
+
     allow_headers=["*"]
+
 
 )
 
@@ -92,9 +162,12 @@ app.add_middleware(
 
 
 
+
+
 # =====================================
-# Register API Routers
+# Register API Routes
 # =====================================
+
 
 
 app.include_router(
@@ -125,16 +198,42 @@ app.include_router(
 
 
 
+
+
 # =====================================
-# Startup Services
+# Startup Events
 # =====================================
+
 
 
 @app.on_event("startup")
+
 def startup_event():
 
 
-    start_scheduler()
+    try:
+
+
+        start_scheduler()
+
+
+        print(
+
+            "SentinelAI scheduler started"
+
+        )
+
+
+    except Exception as e:
+
+
+        print(
+
+            f"Scheduler startup failed: {e}"
+
+        )
+
+
 
 
 
@@ -148,6 +247,7 @@ def startup_event():
 
 
 @app.get("/")
+
 def root():
 
 
@@ -166,9 +266,16 @@ def root():
 
 
 
+        "environment":
+
+        ENVIRONMENT,
+
+
+
         "version":
 
         "1.0.0"
+
 
     }
 
@@ -179,12 +286,14 @@ def root():
 
 
 
+
 # =====================================
-# Health Check
+# Health Monitoring Endpoint
 # =====================================
 
 
 @app.get("/health")
+
 def health():
 
 
@@ -205,6 +314,13 @@ def health():
 
         "service":
 
-        "SentinelAI API"
+        "SentinelAI API",
+
+
+
+        "environment":
+
+        ENVIRONMENT
+
 
     }
