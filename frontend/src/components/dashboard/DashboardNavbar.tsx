@@ -1,9 +1,4 @@
 import {
-    useState
-} from "react";
-
-
-import {
     useNavigate
 } from "react-router-dom";
 
@@ -11,6 +6,7 @@ import {
 import {
     useAuth
 } from "../../auth/AuthContext";
+
 
 
 
@@ -29,6 +25,8 @@ interface Props {
 
 
 
+
+
 export default function DashboardNavbar({
 
     onMenuClick
@@ -40,11 +38,15 @@ export default function DashboardNavbar({
     const navigate = useNavigate();
 
 
+
+
     const {
 
         logout
 
     } = useAuth();
+
+
 
 
 
@@ -62,6 +64,8 @@ export default function DashboardNavbar({
 
 
 
+
+
     function getInitials(
 
         name:string
@@ -71,9 +75,15 @@ export default function DashboardNavbar({
 
         return name
 
+        .trim()
+
         .split(" ")
 
-        .map(word=>word[0])
+        .map(
+
+            word => word.charAt(0)
+
+        )
 
         .join("")
 
@@ -82,7 +92,10 @@ export default function DashboardNavbar({
         .toUpperCase();
 
 
+
     }
+
+
 
 
 
@@ -93,7 +106,9 @@ export default function DashboardNavbar({
     function handleLogout(){
 
 
+
         logout();
+
 
 
         localStorage.removeItem(
@@ -103,6 +118,7 @@ export default function DashboardNavbar({
         );
 
 
+
         navigate(
 
             "/login"
@@ -110,7 +126,9 @@ export default function DashboardNavbar({
         );
 
 
+
     }
+
 
 
 
@@ -123,22 +141,76 @@ export default function DashboardNavbar({
 
 
 
-        <header className="h-16 bg-white shadow flex items-center justify-between px-5">
+
+        <header
+
+
+            className="
+
+            fixed
+
+            top-0
+
+            right-0
+
+            left-0
+
+            lg:left-64
+
+            h-16
+
+            bg-white
+
+            shadow-sm
+
+            z-30
+
+            flex
+
+            items-center
+
+            justify-between
+
+            px-5
+
+            "
+
+
+
+        >
 
 
 
 
 
-            {/* Mobile Menu */}
+
+
+            {/* Mobile Menu Button */}
+
 
 
             <button
 
 
+
                 onClick={onMenuClick}
 
 
-                className="lg:hidden text-2xl"
+
+                className="
+
+                lg:hidden
+
+                text-2xl
+
+                text-gray-700
+
+                hover:text-blue-600
+
+                transition
+
+                "
+
 
 
             >
@@ -155,23 +227,55 @@ export default function DashboardNavbar({
 
 
 
-            <h1 className="font-bold text-xl text-blue-700">
 
 
-                SentinelAI
-
-
-            </h1>
+            {/* Page Brand */}
 
 
 
+            <div className="hidden lg:block">
+
+
+                <h1 className="text-xl font-bold text-blue-700">
+
+
+                    SentinelAI
+
+
+                </h1>
+
+
+
+                <p className="text-xs text-gray-500">
+
+
+                    Environmental Risk Intelligence
+
+
+                </p>
+
+
+
+            </div>
 
 
 
 
 
 
-            <div className="flex items-center gap-4">
+
+
+
+
+
+
+            {/* User Area */}
+
+
+
+            <div className="flex items-center gap-4 ml-auto">
+
+
 
 
 
@@ -181,13 +285,39 @@ export default function DashboardNavbar({
                 {/* Avatar */}
 
 
+
                 <div
 
 
-                    className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold"
+
+                    className="
+
+                    w-11
+
+                    h-11
+
+                    rounded-full
+
+                    bg-blue-600
+
+                    text-white
+
+                    flex
+
+                    items-center
+
+                    justify-center
+
+                    font-bold
+
+                    shadow
+
+                    "
+
 
 
                 >
+
 
 
 
@@ -212,16 +342,22 @@ export default function DashboardNavbar({
 
 
 
+
+                {/* User Information */}
+
+
+
                 <div className="hidden md:block">
 
 
-                    <p className="font-semibold">
+                    <p className="font-semibold text-gray-800">
 
 
                         {username}
 
 
                     </p>
+
 
 
 
@@ -244,6 +380,11 @@ export default function DashboardNavbar({
 
 
 
+
+                {/* Logout */}
+
+
+
                 <button
 
 
@@ -252,14 +393,34 @@ export default function DashboardNavbar({
 
 
 
-                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                    className="
+
+                    bg-red-500
+
+                    hover:bg-red-600
+
+                    text-white
+
+                    px-4
+
+                    py-2
+
+                    rounded-lg
+
+                    font-medium
+
+                    transition
+
+                    "
 
 
 
                 >
 
 
+
                     Logout
+
 
 
                 </button>
@@ -271,6 +432,7 @@ export default function DashboardNavbar({
 
 
             </div>
+
 
 
 

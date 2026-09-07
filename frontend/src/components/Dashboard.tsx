@@ -5,9 +5,6 @@ import {
 
 
 
-import DashboardLayout from "./layout/DashboardLayout";
-
-
 import LocationAnalyzer from "./LocationAnalyzer";
 
 import RiskMap from "./RiskMap";
@@ -20,6 +17,7 @@ import RiskSummary from "./dashboard/RiskSummary";
 import RiskTrend from "./dashboard/RiskTrend";
 
 import RiskHistory from "./dashboard/RiskHistory";
+
 
 
 
@@ -143,6 +141,7 @@ export default function Dashboard(){
 
 
 
+
         async function loadLocations(){
 
 
@@ -156,6 +155,7 @@ export default function Dashboard(){
                     "token"
 
                 );
+
 
 
 
@@ -188,7 +188,6 @@ export default function Dashboard(){
 
 
                 const data = await response.json();
-
 
 
 
@@ -228,8 +227,6 @@ export default function Dashboard(){
 
 
                 }
-
-
 
 
 
@@ -284,213 +281,55 @@ export default function Dashboard(){
 
 
 
-        <DashboardLayout>
+        <div className="space-y-8">
 
 
 
 
 
 
-            <div className="space-y-8">
 
+            {/* System Overview */}
 
 
 
+            <section className="bg-white rounded-2xl shadow-sm p-6">
 
 
 
-                {/* System Overview */}
+                <div className="flex justify-between items-center">
 
 
 
-                <section className="bg-white rounded-2xl shadow-sm p-6">
 
 
+                    <div>
 
-                    <div className="flex justify-between items-center">
 
+                        <h1 className="text-3xl font-bold text-gray-800">
 
 
+                            SentinelAI Operations Dashboard
 
 
-                        <div>
+                        </h1>
 
 
-                            <h1 className="text-3xl font-bold text-gray-800">
 
 
-                                SentinelAI Operations Dashboard
+                        <p className="text-gray-500 mt-2">
 
 
-                            </h1>
+                            AI-powered environmental risk monitoring
 
-
-
-                            <p className="text-gray-500 mt-2">
-
-
-                                AI-powered environmental risk monitoring
-
-                                and early warning system
-
-
-                            </p>
-
-
-                        </div>
-
-
-
-
-
-
-                        <div className="hidden md:block">
-
-
-                            <span className="font-semibold">
-
-
-                                System:
-
-
-                            </span>
-
-
-
-                            <span className="ml-2 text-green-600 font-bold">
-
-
-                                🟢 {status}
-
-
-                            </span>
-
-
-
-                        </div>
-
-
-
-
-
-
-                    </div>
-
-
-
-                </section>
-
-
-
-
-
-
-
-
-
-
-
-
-                {/* Intelligence Cards */}
-
-
-
-                <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-
-
-                    <AlertPanel />
-
-
-
-                    <RiskSummary />
-
-
-
-                    <RiskTrend />
-
-
-
-                </section>
-
-
-
-
-
-
-
-
-
-
-
-
-
-                {/* Highest Risk Locations */}
-
-
-
-                <section className="bg-white rounded-2xl shadow-sm p-6">
-
-
-
-                    <div className="flex justify-between mb-5">
-
-
-
-                        <div>
-
-
-                            <h2 className="text-2xl font-bold">
-
-
-                                Highest Risk Locations
-
-
-                            </h2>
-
-
-
-                            <p className="text-gray-500">
-
-
-                                Areas requiring closest monitoring
-
-
-                            </p>
-
-
-                        </div>
-
-
-
-                    </div>
-
-
-
-
-
-
-
-
-
-                    {
-
-                    locations.length===0 && (
-
-
-                        <p className="text-gray-500">
-
-
-                            No location risk data available.
+                            and early warning system
 
 
                         </p>
 
 
-                    )
 
-
-                    }
+                    </div>
 
 
 
@@ -499,100 +338,246 @@ export default function Dashboard(){
 
 
 
-                    <div className="space-y-3">
+                    <div className="hidden md:block">
 
 
 
-                    {
+                        <span className="font-semibold">
 
 
-                    locations.map(
-
-                        (item,index)=>(
+                            System:
 
 
-                            <div
-
-
-                            key={index}
-
-
-                            className="flex justify-between items-center border rounded-xl p-4 hover:bg-gray-50"
-
-
-                            >
+                        </span>
 
 
 
+                        <span className="ml-2 text-green-600 font-bold">
 
-                                <div className="font-semibold">
+
+                            🟢 {status}
 
 
-                                    #{index+1}
+                        </span>
 
-                                    {" "}
 
-                                    {item.location}
+
+                    </div>
+
+
+
+
+
+                </div>
+
+
+
+            </section>
+
+
+
+
+
+
+
+
+
+            {/* Intelligence Cards */}
+
+
+
+            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+
+
+                <AlertPanel />
+
+
+
+                <RiskSummary />
+
+
+
+                <RiskTrend />
+
+
+
+            </section>
+
+
+
+
+
+
+
+
+
+            {/* Highest Risk Locations */}
+
+
+
+            <section className="bg-white rounded-2xl shadow-sm p-6">
+
+
+
+
+
+                <div className="mb-5">
+
+
+                    <h2 className="text-2xl font-bold">
+
+
+                        Highest Risk Locations
+
+
+                    </h2>
+
+
+
+
+                    <p className="text-gray-500">
+
+
+                        Areas requiring closest monitoring
+
+
+                    </p>
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+                {
+
+                locations.length===0 && (
+
+
+                    <p className="text-gray-500">
+
+
+                        No location risk data available.
+
+
+                    </p>
+
+
+                )
+
+                }
+
+
+
+
+
+
+
+
+
+                <div className="space-y-3">
+
+
+
+                {
+
+
+                locations.map(
+
+                    (item,index)=>(
+
+
+
+                        <div
+
+
+                        key={index}
+
+
+                        className="flex justify-between items-center border rounded-xl p-4 hover:bg-gray-50"
+
+
+                        >
+
+
+
+
+                            <div className="font-semibold">
+
+
+                                #{index+1}
+
+                                {" "}
+
+                                {item.location}
+
+
+                            </div>
+
+
+
+
+
+
+
+                            <div className="text-right">
+
+
+
+                                <div className="font-bold">
+
+
+                                    {item.risk_level}
 
 
                                 </div>
 
 
 
+                                <div className="text-gray-500">
 
 
-
-                                <div className="text-right">
-
-
-                                    <div className="font-bold">
-
-
-                                        {item.risk_level}
-
-
-                                    </div>
-
-
-
-
-                                    <div className="text-gray-500">
-
-
-                                        {item.risk_score}/100
-
-
-                                    </div>
-
+                                    {item.risk_score}/100
 
 
                                 </div>
-
 
 
 
                             </div>
 
 
-                        )
+
+
+
+                        </div>
+
 
 
                     )
 
+                )
 
-                    }
 
+                }
 
 
 
+                </div>
 
-                    </div>
 
 
 
 
+            </section>
 
-                </section>
 
 
 
@@ -601,84 +586,66 @@ export default function Dashboard(){
 
 
 
+            {/* Prediction History */}
 
 
 
+            <section className="bg-white rounded-2xl shadow-sm p-6">
 
 
-                {/* Prediction History */}
+                <RiskHistory />
 
 
+            </section>
 
-                <section className="bg-white rounded-2xl shadow-sm p-6">
 
 
-                    <RiskHistory />
 
 
-                </section>
 
 
 
 
+            {/* AI Analyzer */}
 
 
 
+            <section className="bg-white rounded-2xl shadow-sm p-6">
 
 
+                <LocationAnalyzer />
 
 
+            </section>
 
-                {/* AI Analyzer */}
 
 
 
-                <section className="bg-white rounded-2xl shadow-sm p-6">
 
 
-                    <LocationAnalyzer />
 
 
-                </section>
 
+            {/* GIS Map */}
 
 
 
+            <section className="bg-white rounded-2xl shadow-sm p-6">
 
 
+                <RiskMap />
 
 
+            </section>
 
 
 
 
-                {/* GIS Map */}
 
 
 
-                <section className="bg-white rounded-2xl shadow-sm p-6">
+        </div>
 
-
-                    <RiskMap />
-
-
-                </section>
-
-
-
-
-
-
-
-
-            </div>
-
-
-
-
-
-
-        </DashboardLayout>
 
 
     );
