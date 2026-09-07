@@ -9,10 +9,10 @@ from pathlib import Path
 
 
 
+
 # =====================================
 # Load Environment Variables
 # =====================================
-
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 
@@ -41,7 +41,6 @@ API_KEY = os.getenv(
 # =====================================
 # OpenWeather Connector
 # =====================================
-
 
 def fetch_weather(city: str):
 
@@ -72,6 +71,8 @@ def fetch_weather(city: str):
             "WEATHER_API_KEY missing"
 
         )
+
+
 
 
 
@@ -121,7 +122,6 @@ def fetch_weather(city: str):
         )
 
 
-
         data = response.json()
 
 
@@ -134,6 +134,7 @@ def fetch_weather(city: str):
             f"Weather request failed: {str(e)}"
 
         )
+
 
 
 
@@ -166,6 +167,84 @@ def fetch_weather(city: str):
 
 
     # =====================================
+    # Extract Main Weather Data
+    # =====================================
+
+
+    temperature = data.get(
+
+        "main",
+
+        {}
+
+    ).get(
+
+        "temp",
+
+        0
+
+    )
+
+
+
+
+
+    humidity = data.get(
+
+        "main",
+
+        {}
+
+    ).get(
+
+        "humidity",
+
+        0
+
+    )
+
+
+
+
+
+
+
+
+
+    # =====================================
+    # Extract Weather Condition
+    # =====================================
+
+
+    weather_condition = (
+
+        data.get(
+
+            "weather",
+
+            [{}]
+
+        )[0]
+
+        .get(
+
+            "description",
+
+            ""
+
+        )
+
+    )
+
+
+
+
+
+
+
+
+
+    # =====================================
     # Rainfall Extraction
     # =====================================
 
@@ -176,14 +255,26 @@ def fetch_weather(city: str):
 
 
 
-    if "rain" in data:
+    rain_data = data.get(
+
+        "rain",
+
+        {}
+
+    )
 
 
-        rainfall = data["rain"].get(
+
+
+
+    if rain_data:
+
+
+        rainfall = rain_data.get(
 
             "1h",
 
-            data["rain"].get(
+            rain_data.get(
 
                 "3h",
 
@@ -202,7 +293,55 @@ def fetch_weather(city: str):
 
 
     # =====================================
-    # Return Weather Data
+    # Rainfall Estimation Backup
+    # =====================================
+
+
+    if rainfall == 0:
+
+
+        condition = weather_condition.lower()
+
+
+
+        if "heavy rain" in condition:
+
+
+            rainfall = 25
+
+
+
+        elif "rain" in condition:
+
+
+            rainfall = 5
+
+
+
+        elif "storm" in condition:
+
+
+            rainfall = 20
+
+
+
+        else:
+
+
+            rainfall = 0
+
+
+
+
+
+
+
+
+
+
+
+    # =====================================
+    # Return Weather Intelligence Data
     # =====================================
 
 
@@ -211,31 +350,46 @@ def fetch_weather(city: str):
 
         "temperature":
 
-        data["main"]["temp"],
+        round(
 
+            float(temperature),
+
+            2
+
+        ),
 
 
 
 
         "humidity":
 
-        data["main"]["humidity"],
+        round(
 
+            float(humidity),
+
+            2
+
+        ),
 
 
 
 
         "rainfall":
 
-        rainfall,
+        round(
 
+            float(rainfall),
+
+            2
+
+        ),
 
 
 
 
         "weather":
 
-        data["weather"][0]["description"]
+        weather_condition
 
 
     }

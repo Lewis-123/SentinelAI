@@ -4,7 +4,6 @@ import random
 
 
 
-
 # =====================================
 # Simulated Satellite Environmental Data
 # =====================================
@@ -41,20 +40,19 @@ def fetch_satellite_data(
 
 
 
-
-
     # =====================================
-    # Vegetation Index (NDVI)
+    # NDVI Simulation
     # =====================================
 
+    # Higher vegetation around wetter areas
 
     ndvi = round(
 
         random.uniform(
 
-            0.2,
+            0.25,
 
-            0.9
+            0.85
 
         ),
 
@@ -69,24 +67,24 @@ def fetch_satellite_data(
 
 
     # =====================================
-    # Simulated Rainfall
+    # Rainfall Simulation
     # =====================================
 
+    # Simulated monthly rainfall estimate
 
     rainfall = round(
 
         random.uniform(
 
-            0,
+            10,
 
-            200
+            180
 
         ),
 
         2
 
     )
-
 
 
 
@@ -98,22 +96,19 @@ def fetch_satellite_data(
     # Rainfall Anomaly
     # =====================================
 
-
     rainfall_anomaly = round(
 
         random.uniform(
 
-            -50,
+            -40,
 
-            50
+            40
 
         ),
 
         2
 
     )
-
-
 
 
 
@@ -130,13 +125,9 @@ def fetch_satellite_data(
 
 
 
-
-
         "rainfall":
 
         rainfall,
-
-
 
 
 

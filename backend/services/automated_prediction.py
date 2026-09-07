@@ -16,6 +16,8 @@ from backend.connectors.population_connector import (
 from backend.connectors.vulnerability_connector import (
     fetch_vulnerability_data
 )
+
+
 from backend.services.prediction import (
     predict_risk
 )
@@ -50,6 +52,7 @@ from backend.data.kenya_locations import (
 
 
 
+
 def predict_location_risk(
 
     city,
@@ -66,7 +69,11 @@ def predict_location_risk(
 
     Location
         ↓
-    Data Collection
+    Weather Data
+        ↓
+    Satellite Data
+        ↓
+    Socioeconomic Data
         ↓
     Feature Engineering
         ↓
@@ -84,7 +91,6 @@ def predict_location_risk(
     # =====================================
     # Location Lookup
     # =====================================
-
 
     location = get_location_coordinates(
 
@@ -121,7 +127,6 @@ def predict_location_risk(
     # Previous Risk
     # =====================================
 
-
     existing_location = (
 
         db.query(LocationRisk)
@@ -154,9 +159,8 @@ def predict_location_risk(
 
 
     # =====================================
-    # Environmental Data
+    # Collect Data
     # =====================================
-
 
     weather = fetch_weather(
 
@@ -199,9 +203,58 @@ def predict_location_risk(
 
 
     # =====================================
-    # Feature Engineering
+    # Rainfall Intelligence
     # =====================================
 
+    weather_rainfall = weather.get(
+
+        "rainfall",
+
+        0
+
+    )
+
+
+
+    satellite_rainfall = satellite.get(
+
+        "rainfall",
+
+        0
+
+    )
+
+
+
+
+
+    # Prefer real weather rainfall,
+    # otherwise use satellite estimate
+
+    if weather_rainfall > 0:
+
+
+        rainfall = weather_rainfall
+
+
+    else:
+
+
+        rainfall = satellite_rainfall
+
+
+
+
+
+
+
+
+
+
+
+    # =====================================
+    # Feature Engineering
+    # =====================================
 
     features = {
 
@@ -218,15 +271,11 @@ def predict_location_risk(
 
 
 
+
         "rainfall":
 
-        satellite.get(
+        rainfall,
 
-            "rainfall",
-
-            0
-
-        ),
 
 
 
@@ -242,6 +291,7 @@ def predict_location_risk(
 
 
 
+
         "population":
 
         population.get(
@@ -251,6 +301,7 @@ def predict_location_risk(
             0
 
         ),
+
 
 
 
@@ -266,6 +317,7 @@ def predict_location_risk(
 
 
 
+
         "poverty_rate":
 
         vulnerability.get(
@@ -278,6 +330,7 @@ def predict_location_risk(
 
 
 
+
         "ndvi":
 
         satellite.get(
@@ -287,6 +340,7 @@ def predict_location_risk(
             0
 
         ),
+
 
 
 
@@ -314,7 +368,6 @@ def predict_location_risk(
     # AI Prediction
     # =====================================
 
-
     prediction = predict_risk(
 
         features,
@@ -327,10 +380,7 @@ def predict_location_risk(
 
 
 
-    # IMPORTANT:
-    # Attach environmental data
-    # for history and map display
-
+    # Save features for history/map
 
     prediction["features"] = features
 
@@ -340,13 +390,9 @@ def predict_location_risk(
 
 
 
-
-
-
     # =====================================
-    # Alert Generation
+    # Alerts
     # =====================================
-
 
     create_alert_if_needed(
 
@@ -371,9 +417,8 @@ def predict_location_risk(
 
 
     # =====================================
-    # Save Map Location
+    # Save Location Risk
     # =====================================
-
 
     save_location_risk(
 
@@ -400,9 +445,8 @@ def predict_location_risk(
 
 
     # =====================================
-    # Save Prediction History
+    # Save History
     # =====================================
-
 
     save_prediction_history(
 
@@ -425,7 +469,6 @@ def predict_location_risk(
     # =====================================
     # API Response
     # =====================================
-
 
     return {
 
