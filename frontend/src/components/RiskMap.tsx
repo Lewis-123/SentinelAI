@@ -1,37 +1,27 @@
 import {
+
     MapContainer,
+
     TileLayer,
+
     Marker,
+
     Popup
+
 } from "react-leaflet";
 
 
 import {
+
     useEffect,
+
     useState
+
 } from "react";
 
 
-import L from "leaflet";
 
-
-
-
-
-interface RiskLocation {
-
-    location:string;
-
-    latitude:number;
-
-    longitude:number;
-
-    risk_level:string;
-
-    risk_score:number;
-
-}
-
+import "leaflet/dist/leaflet.css";
 
 
 
@@ -41,12 +31,61 @@ interface RiskLocation {
 export default function RiskMap(){
 
 
-    const [locations,setLocations] =
-        useState<RiskLocation[]>([]);
+
+    const [locations,setLocations] = useState<any[]>([]);
 
 
-    const [loading,setLoading] =
-        useState(true);
+
+
+
+    async function loadMap(){
+
+
+        const token = localStorage.getItem(
+
+            "token"
+
+        );
+
+
+
+        const response = await fetch(
+
+            "http://127.0.0.1:8000/risk-map",
+
+            {
+
+
+                headers:{
+
+
+                    Authorization:
+
+                    `Bearer ${token}`
+
+
+                }
+
+
+            }
+
+        );
+
+
+
+        const data = await response.json();
+
+
+
+        setLocations(
+
+            data.locations || []
+
+        );
+
+
+    }
+
 
 
 
@@ -56,86 +95,7 @@ export default function RiskMap(){
     useEffect(()=>{
 
 
-        async function loadMap(){
-
-
-            try{
-
-
-                const token =
-                    localStorage.getItem(
-                        "token"
-                    );
-
-
-
-                const response = await fetch(
-
-                    "http://127.0.0.1:8000/risk-map",
-
-                    {
-
-                        headers:{
-
-                            Authorization:
-
-                            `Bearer ${token}`
-
-                        }
-
-                    }
-
-                );
-
-
-
-                const data =
-                    await response.json();
-
-
-
-                setLocations(
-
-                    data.locations || []
-
-                );
-
-
-            }
-
-
-            catch(error){
-
-
-                console.error(
-
-                    "Map error",
-
-                    error
-
-                );
-
-
-            }
-
-
-            finally{
-
-
-                setLoading(false);
-
-
-            }
-
-
-        }
-
-
-
-
-
         loadMap();
-
 
 
     },[]);
@@ -146,117 +106,29 @@ export default function RiskMap(){
 
 
 
-    function markerIcon(
-        level:string
-    ){
-
-
-        const color =
-
-            level === "HIGH"
-
-            ? "red"
-
-            :
-
-            level === "MEDIUM"
-
-            ? "orange"
-
-            :
-
-            "green";
-
-
-
-
-
-        return L.divIcon({
-
-            html:
-
-            `
-
-            <div style="
-
-            background:${color};
-
-            width:25px;
-
-            height:25px;
-
-            border-radius:50%;
-
-            border:3px solid white;
-
-            ">
-
-            </div>
-
-            `
-
-        });
-
-
-    }
-
-
-
-
-
-
-    if(loading){
-
-
-        return (
-
-            <p>
-
-                Loading map...
-
-            </p>
-
-        );
-
-    }
-
-
-
-
-
-
     return (
 
-        <div>
 
-
-            <h2 className="text-xl font-bold mb-4">
-
-                SentinelAI Risk Map
-
-            </h2>
-
+        <div className="h-[500px]">
 
 
             <MapContainer
 
-                center={[
 
-                    -1.2921,
+                center={[0.0236,37.9062]}
 
-                    36.8219
-
-                ]}
 
                 zoom={6}
 
+
                 style={{
 
-                    height:"550px",
+                    height:"100%",
 
                     width:"100%"
 
                 }}
+
 
             >
 
@@ -264,59 +136,51 @@ export default function RiskMap(){
 
                 <TileLayer
 
-                    url=
 
-                    "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+
 
                 />
 
 
 
 
-                {
 
-                locations.map(
+                {locations.map(
 
-                    item => (
-
-
-                        <Marker
-
-                            key={item.location}
-
-                            position={[
-
-                                item.latitude,
-
-                                item.longitude
-
-                            ]}
-
-                            icon={
-
-                                markerIcon(
-
-                                    item.risk_level
-
-                                )
-
-                            }
-
-                        >
+                    (item)=>
 
 
-                            <Popup>
+                    <Marker
 
 
-                                <b>
+                        key={item.location}
+
+
+                        position={[
+
+                            item.latitude,
+
+                            item.longitude
+
+                        ]}
+
+
+                    >
+
+
+                        <Popup>
+
+
+                            <h3>
 
                                 {item.location}
 
-                                </b>
+                            </h3>
 
 
-                                <br/>
 
+                            <p>
 
                                 Risk:
 
@@ -324,9 +188,11 @@ export default function RiskMap(){
 
                                 {item.risk_level}
 
+                            </p>
 
-                                <br/>
 
+
+                            <p>
 
                                 Score:
 
@@ -334,20 +200,18 @@ export default function RiskMap(){
 
                                 {item.risk_score}/100
 
+                            </p>
 
 
-                            </Popup>
+                        </Popup>
 
 
+                    </Marker>
 
-                        </Marker>
+
+                )}
 
 
-                    )
-
-                )
-
-                }
 
 
 
@@ -357,6 +221,8 @@ export default function RiskMap(){
 
         </div>
 
+
     );
+
 
 }

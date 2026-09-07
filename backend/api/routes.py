@@ -15,8 +15,11 @@ from backend.database.models import (
 )
 
 
-from backend.auth.dependencies import get_current_user
+from backend.auth.dependencies import (
 
+    get_current_user
+
+)
 
 
 from backend.services.automated_prediction import (
@@ -37,18 +40,22 @@ router = APIRouter()
 
 
 
-# =====================================
+# =====================================================
 # Health Check
-# =====================================
+# =====================================================
 
 @router.get("/health")
 def health():
 
+
     return {
+
 
         "status": "healthy",
 
-        "service": "SentinelAI"
+        "service": "SentinelAI",
+
+        "version": "1.0"
 
     }
 
@@ -60,9 +67,9 @@ def health():
 
 
 
-# =====================================
-# Analyze Location
-# =====================================
+# =====================================================
+# AI Risk Analysis
+# =====================================================
 
 @router.get("/analyze/{location}")
 
@@ -72,7 +79,7 @@ def analyze_location(
 
     db: Session = Depends(get_db),
 
-    current_user=Depends(get_current_user)
+    current_user = Depends(get_current_user)
 
 ):
 
@@ -112,9 +119,9 @@ def analyze_location(
 
 
 
-# =====================================
-# Risk Map
-# =====================================
+# =====================================================
+# Kenya Risk Map
+# =====================================================
 
 @router.get("/risk-map")
 
@@ -122,7 +129,7 @@ def risk_map(
 
     db: Session = Depends(get_db),
 
-    current_user=Depends(get_current_user)
+    current_user = Depends(get_current_user)
 
 ):
 
@@ -140,10 +147,46 @@ def risk_map(
 
 
 
-        return {
+        markers = []
 
 
-            "locations":[
+
+        for item in locations:
+
+
+
+            color = "yellow"
+
+
+
+            if item.risk_level:
+
+
+                level = item.risk_level.upper()
+
+
+
+                if level == "LOW":
+
+                    color = "green"
+
+
+
+                elif level == "HIGH":
+
+                    color = "red"
+
+
+
+                elif level == "MEDIUM":
+
+                    color = "yellow"
+
+
+
+
+
+            markers.append(
 
 
                 {
@@ -154,9 +197,11 @@ def risk_map(
                     item.location,
 
 
+
                     "latitude":
 
                     item.latitude,
+
 
 
                     "longitude":
@@ -164,24 +209,36 @@ def risk_map(
                     item.longitude,
 
 
+
                     "risk_level":
 
                     item.risk_level,
 
 
+
                     "risk_score":
 
-                    item.risk_score
+                    item.risk_score,
+
+
+
+                    "color":
+
+                    color
 
 
                 }
 
+            )
 
-                for item in locations
 
 
-            ]
 
+
+        return {
+
+
+            "locations": markers
 
         }
 
@@ -206,77 +263,170 @@ def risk_map(
 
 
 
-# =====================================
+# =====================================================
 # Prediction History
-# =====================================
+# =====================================================
 
-@router.get("/history")
+@router.get("/history/")
 
-def history(
+def prediction_history(
 
     db: Session = Depends(get_db),
 
-    current_user=Depends(get_current_user)
+    current_user = Depends(get_current_user)
 
 ):
 
 
-    records = (
+    try:
 
-        db.query(RiskPrediction)
 
-        .order_by(
+        records = (
 
-            RiskPrediction.created_at.desc()
+            db.query(RiskPrediction)
+
+            .order_by(
+
+                RiskPrediction.created_at.desc()
+
+            )
+
+            .all()
 
         )
 
-        .all()
+
+
+
+
+        history = []
+
+
+
+
+        for item in records:
+
+
+
+            history.append(
+
+
+                {
+
+
+                    "location":
+
+                    item.location,
+
+
+
+                    "risk_level":
+
+                    item.risk_level,
+
+
+
+                    "risk_score":
+
+                    item.risk_score,
+
+
+
+                    "confidence":
+
+                    getattr(
+
+                        item,
+
+                        "confidence",
+
+                        None
+
+                    ),
+
+
+
+                    "created_at":
+
+                    item.created_at
+
+
+                }
+
+            )
+
+
+
+
+
+        return {
+
+
+            "history": history
+
+        }
+
+
+
+
+
+    except Exception as e:
+
+
+        raise HTTPException(
+
+            status_code=500,
+
+            detail=str(e)
+
+        )
+
+
+
+
+
+
+
+
+# =====================================================
+# Location List (Autocomplete Support)
+# =====================================================
+
+@router.get("/locations")
+
+def available_locations(
+
+    current_user = Depends(get_current_user)
+
+):
+
+
+    from backend.data.kenya_locations import (
+
+        KENYA_LOCATIONS
 
     )
-
 
 
 
     return {
 
 
-        "history":[
-
+        "locations": [
 
             {
 
+                "name": value["name"],
 
-                "location":
+                "county": value["county"],
 
-                item.location,
+                "latitude": value["latitude"],
 
-
-                "risk_level":
-
-                item.risk_level,
-
-
-                "risk_score":
-
-                item.risk_score,
-
-
-                "confidence":
-
-                item.confidence,
-
-
-                "date":
-
-                item.created_at
-
+                "longitude": value["longitude"]
 
             }
 
-
-            for item in records
-
+            for value in KENYA_LOCATIONS.values()
 
         ]
 
