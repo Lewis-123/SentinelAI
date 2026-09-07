@@ -20,17 +20,19 @@ import {
 
 import ProtectedRoute from "./auth/ProtectedRoute";
 
+
+
 import Login from "./auth/Login";
 
-
+import Register from "./pages/Register";
 
 import Landing from "./pages/Landing";
-
-import Register from "./pages/Register";
 
 
 
 import Dashboard from "./components/Dashboard";
+
+
 
 
 
@@ -53,24 +55,39 @@ export default function App(){
                 <Routes>
 
 
+
+                    {/* Public Landing Page */}
+
                     <Route
 
                         path="/"
 
-                        element={<Landing/>}
+                        element={
+
+                            <Landing/>
+
+                        }
 
                     />
 
 
 
+
+
+                    {/* Authentication */}
 
                     <Route
 
                         path="/login"
 
-                        element={<Login/>}
+                        element={
+
+                            <Login/>
+
+                        }
 
                     />
+
 
 
 
@@ -79,13 +96,22 @@ export default function App(){
 
                         path="/register"
 
-                        element={<Register/>}
+                        element={
+
+                            <Register/>
+
+                        }
 
                     />
 
 
 
 
+
+
+
+
+                    {/* Protected Dashboard */}
 
                     <Route
 
@@ -93,15 +119,38 @@ export default function App(){
 
                         element={
 
+
                             <ProtectedRoute>
+
 
                                 <Dashboard/>
 
+
                             </ProtectedRoute>
+
 
                         }
 
                     />
+
+
+
+
+
+                    {/* Fallback */}
+
+                    <Route
+
+                        path="*"
+
+                        element={
+
+                            <Landing/>
+
+                        }
+
+                    />
+
 
 
                 </Routes>
