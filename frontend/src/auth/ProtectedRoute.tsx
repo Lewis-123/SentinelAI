@@ -1,22 +1,30 @@
 import {
-
     Navigate
-
 } from "react-router-dom";
 
 
-import {
-
+import type {
     ReactNode
-
 } from "react";
 
 
 import {
-
     useAuth
-
 } from "./AuthContext";
+
+
+
+
+
+
+
+
+interface Props {
+
+    children: ReactNode;
+
+}
+
 
 
 
@@ -28,11 +36,8 @@ export default function ProtectedRoute({
 
     children
 
-}:{
+}: Props){
 
-    children:ReactNode
-
-}){
 
 
     const {
@@ -45,10 +50,12 @@ export default function ProtectedRoute({
 
 
 
+
     if(!token){
 
 
         return (
+
 
             <Navigate
 
@@ -58,7 +65,9 @@ export default function ProtectedRoute({
 
             />
 
+
         );
+
 
     }
 
@@ -66,6 +75,8 @@ export default function ProtectedRoute({
 
 
 
+
     return children;
+
 
 }
