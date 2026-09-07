@@ -25,11 +25,20 @@ from backend.services.location import (
 )
 
 
+from backend.services.history import (
+
+    save_prediction_history
+
+)
+
+
 from backend.data.kenya_locations import (
 
     get_location_coordinates
 
 )
+
+
 
 
 
@@ -49,28 +58,32 @@ def predict_location_risk(
 
     Flow:
 
-    Location
-        ↓
-    Coordinates
-        ↓
-    Weather
-        ↓
-    Satellite
-        ↓
-    Population
-        ↓
-    Vulnerability
-        ↓
-    AI Prediction
-        ↓
-    Database Save
+    User Location
+          ↓
+    Coordinate Lookup
+          ↓
+    Weather Data
+          ↓
+    Satellite Data
+          ↓
+    Population Data
+          ↓
+    Vulnerability Data
+          ↓
+    Feature Engineering
+          ↓
+    AI Risk Prediction
+          ↓
+    Save Risk Location
+          ↓
+    Save Prediction History
 
     """
 
 
 
     # =====================================
-    # Find Location Coordinates
+    # Location Lookup
     # =====================================
 
 
@@ -104,8 +117,9 @@ def predict_location_risk(
 
 
 
+
     # =====================================
-    # External Data Sources
+    # Data Collection
     # =====================================
 
 
@@ -131,13 +145,11 @@ def predict_location_risk(
 
 
 
-
     population = fetch_population_data(
 
         location["name"]
 
     )
-
 
 
 
@@ -156,7 +168,7 @@ def predict_location_risk(
 
 
     # =====================================
-    # ML Feature Preparation
+    # Feature Engineering
     # =====================================
 
 
@@ -273,6 +285,7 @@ def predict_location_risk(
 
 
 
+
     # =====================================
     # AI Prediction
     # =====================================
@@ -293,7 +306,7 @@ def predict_location_risk(
 
 
     # =====================================
-    # Save Location Risk
+    # Save Location Risk For Map
     # =====================================
 
 
@@ -320,7 +333,28 @@ def predict_location_risk(
 
 
     # =====================================
-    # Final Response
+    # Save Prediction History
+    # =====================================
+
+
+    save_prediction_history(
+
+        db,
+
+        location["name"],
+
+        prediction
+
+    )
+
+
+
+
+
+
+
+    # =====================================
+    # API Response
     # =====================================
 
 

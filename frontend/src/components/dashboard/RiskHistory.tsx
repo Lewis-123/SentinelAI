@@ -4,29 +4,118 @@ import { useEffect, useState } from "react";
 
 
 
-interface HistoryItem {
+export default function RiskHistory() {
 
-    location:string;
 
-    risk_level:string;
+    const [history, setHistory] = useState<any[]>([]);
 
-    risk_score:number;
+    const [loading, setLoading] = useState(true);
 
-    date:string;
-
-}
+    const [error, setError] = useState("");
 
 
 
 
 
-export default function RiskHistory(){
+
+
+    async function loadHistory() {
+
+
+        try {
+
+
+            const token = localStorage.getItem(
+
+                "token"
+
+            );
 
 
 
-    const [history,setHistory] =
+            const response = await fetch(
 
-        useState<HistoryItem[]>([]);
+                "http://127.0.0.1:8000/history/",
+
+                {
+
+                    headers: {
+
+                        Authorization:
+
+                        `Bearer ${token}`
+
+                    }
+
+                }
+
+            );
+
+
+
+
+
+            const data = await response.json();
+
+
+
+
+
+            if (!response.ok) {
+
+
+                throw new Error(
+
+                    data.detail ||
+
+                    "Failed to load history"
+
+                );
+
+            }
+
+
+
+
+
+
+            setHistory(
+
+                data.history || []
+
+            );
+
+
+
+        }
+
+
+        catch(error:any){
+
+
+            setError(
+
+                error.message
+
+            );
+
+
+        }
+
+
+        finally{
+
+
+            setLoading(false);
+
+
+        }
+
+
+    }
+
+
+
 
 
 
@@ -34,44 +123,6 @@ export default function RiskHistory(){
 
 
     useEffect(()=>{
-
-
-        async function loadHistory(){
-
-
-            try{
-
-
-                const response = await fetch(
-
-                    "http://127.0.0.1:8000/history/"
-
-                );
-
-
-
-                const data = await response.json();
-
-
-
-                setHistory(
-
-                    data.history || []
-
-                );
-
-
-            }
-
-            catch(error){
-
-                console.error(error);
-
-            }
-
-
-        }
-
 
 
         loadHistory();
@@ -86,12 +137,14 @@ export default function RiskHistory(){
 
 
 
+
+
     return (
 
-        <div className="bg-white rounded-xl shadow p-6">
+        <div className="card">
 
 
-            <h2 className="text-xl font-bold mb-4">
+            <h2>
 
                 Prediction History
 
@@ -100,12 +153,41 @@ export default function RiskHistory(){
 
 
 
-            {
 
-            history.length === 0 ?
+            {loading && (
+
+                <p>
+
+                    Loading history...
+
+                </p>
+
+            )}
 
 
-            (
+
+
+
+
+
+            {error && (
+
+                <p className="error">
+
+                    {error}
+
+                </p>
+
+            )}
+
+
+
+
+
+
+
+
+            {!loading && history.length === 0 && (
 
                 <p>
 
@@ -113,52 +195,107 @@ export default function RiskHistory(){
 
                 </p>
 
-            )
+            )}
 
 
-            :
 
-            (
 
-                history.map((item,index)=>(
+
+
+
+            {history.map(
+
+                (item,index)=>(
 
 
                     <div
 
-                    key={index}
+                        key={index}
 
-                    className="border-b py-3"
+                        className="history-item"
 
                     >
 
 
-                        <p className="font-bold">
+                        <h3>
 
                             {item.location}
 
-                        </p>
+                        </h3>
+
 
 
 
                         <p>
 
-                            Risk:
+                            Risk Level:
 
                             {" "}
+
+                            <b>
 
                             {item.risk_level}
 
+                            </b>
+
                         </p>
+
+
 
 
 
                         <p>
 
-                            Score:
+                            Risk Score:
 
                             {" "}
 
+                            <b>
+
                             {item.risk_score}/100
+
+                            </b>
+
+                        </p>
+
+
+
+
+
+                        <p>
+
+                            Confidence:
+
+                            {" "}
+
+                            <b>
+
+                            {item.confidence || 0}%
+
+                            </b>
+
+                        </p>
+
+
+
+
+
+
+                        <p>
+
+                            Date:
+
+                            {" "}
+
+                            {item.created_at
+
+                            ? new Date(
+
+                                item.created_at
+
+                              ).toLocaleString()
+
+                            : "N/A"}
 
                         </p>
 
@@ -167,11 +304,9 @@ export default function RiskHistory(){
                     </div>
 
 
-                ))
+                )
 
-            )
-
-            }
+            )}
 
 
 

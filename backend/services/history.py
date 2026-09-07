@@ -1,4 +1,7 @@
-from backend.database.models import PredictionHistory
+from backend.database.models import RiskPrediction
+
+
+
 
 
 
@@ -6,63 +9,138 @@ def save_prediction_history(
 
     db,
 
-    features,
+    location,
 
-    result
+    prediction
 
 ):
 
 
-    history = PredictionHistory(
+    features = prediction.get(
 
-        risk_level=result["risk_level"],
+        "features",
 
-        confidence=result["confidence"],
-
-        rainfall=features["rainfall"],
-
-        temperature=features["temperature"],
-
-        humidity=features["humidity"],
-
-        population=features["population"],
-
-        density=features["density"],
-
-        poverty_rate=features["poverty_rate"]
+        {}
 
     )
 
 
 
-    db.add(history)
+
+
+    record = RiskPrediction(
+
+
+        location=location,
+
+
+
+        risk_level=prediction.get(
+
+            "risk_level"
+
+        ),
+
+
+
+        risk_score=prediction.get(
+
+            "risk_score"
+
+        ),
+
+
+
+        confidence=prediction.get(
+
+            "confidence"
+
+        ),
+
+
+
+
+
+        temperature=features.get(
+
+            "temperature"
+
+        ),
+
+
+
+        rainfall=features.get(
+
+            "rainfall"
+
+        ),
+
+
+
+        humidity=features.get(
+
+            "humidity"
+
+        ),
+
+
+
+        population=features.get(
+
+            "population"
+
+        ),
+
+
+
+        density=features.get(
+
+            "density"
+
+        ),
+
+
+
+        poverty_rate=features.get(
+
+            "poverty_rate"
+
+        ),
+
+
+
+        ndvi=features.get(
+
+            "ndvi"
+
+        ),
+
+
+
+        rainfall_anomaly=features.get(
+
+            "rainfall_anomaly"
+
+        )
+
+    )
+
+
+
+
+
+    db.add(record)
+
 
 
     db.commit()
 
 
-    db.refresh(history)
 
-
-    return history
+    db.refresh(record)
 
 
 
 
 
-def get_prediction_history(db):
-
-
-    return (
-
-        db.query(PredictionHistory)
-
-        .order_by(
-
-            PredictionHistory.timestamp.desc()
-
-        )
-
-        .all()
-
-    )
+    return record
